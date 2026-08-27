@@ -52,78 +52,52 @@
       width: 100%;
     }
 
-    /* Live HUD Monitor */
-    .hud-monitor {
-      background: rgba(1, 8, 4, 0.85);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 1.2rem;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--mint-light);
-      text-align: left;
-      height: 250px;
+    /* 3D Rotating Tree Styles */
+    .tree-container {
+      width: 100%;
+      height: 300px;
       display: flex;
-      flex-direction: column;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 220, 100, 0.05);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hud-header {
-      display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--glass-border);
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.8rem;
+      perspective: 800px;
+      position: relative;
     }
 
-    .hud-pulse {
-      width: 6px; height: 6px;
-      background: #00dc64;
-      border-radius: 50%;
-      animation: pulse-glow 2s infinite;
+    .tree-rotator {
+      width: 200px;
+      height: 250px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: spin-tree 18s linear infinite;
     }
 
-    .hud-title {
-      font-size: 0.65rem;
-      color: var(--mid-gray);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .hud-feed {
-      flex: 1;
-      overflow-y: auto;
+    .tree-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      backface-visibility: visible;
       display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      scrollbar-width: none;
+      justify-content: center;
+      align-items: center;
     }
 
-    .hud-feed::-webkit-scrollbar {
-      display: none;
+    .tree-panel.angle-0   { transform: rotateY(0deg); }
+    .tree-panel.angle-45  { transform: rotateY(45deg); }
+    .tree-panel.angle-90  { transform: rotateY(90deg); }
+    .tree-panel.angle-135 { transform: rotateY(135deg); }
+
+    .tree-svg {
+      width: 200px;
+      height: 250px;
+      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.25));
     }
 
-    .hud-log {
-      line-height: 1.4;
-      opacity: 0.9;
-      animation: slide-in-up 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) both;
-    }
-
-    .log-time {
-      color: var(--emerald-core);
-      margin-right: 0.4rem;
-    }
-
-    .log-tag {
-      color: var(--gold);
-      margin-right: 0.4rem;
-    }
-
-    .log-msg {
-      color: var(--off-white);
+    @keyframes spin-tree {
+      from { transform: rotateY(0deg); }
+      to   { transform: rotateY(360deg); }
     }
 
     /* Minimalist Feature Cards */
@@ -289,17 +263,60 @@
       </div>
     </div>
 
-    <!-- Active Audit HUD Monitor -->
-    <div class="hud-monitor">
-      <div class="hud-header">
-        <span class="hud-pulse"></span>
-        <span class="hud-title">GENLAYER ACTIVE AUDIT MONITOR</span>
-      </div>
-      <div class="hud-feed" id="hud-feed">
-        <div class="hud-log">
-          <span class="log-time">[00:00:00]</span>
-          <span class="log-tag">// SYS.INIT</span>
-          <span class="log-msg">Scanning GenLayer Studio Network...</span>
+    <!-- Slowly Rotating 3D Tree -->
+    <div class="tree-container">
+      <div class="tree-rotator">
+        <!-- Panel 0deg -->
+        <div class="tree-panel angle-0">
+          <svg viewBox="0 0 120 150" class="tree-svg">
+            <path d="M30 130 L90 130" stroke="var(--glass-border)" stroke-width="1" fill="none" />
+            <path d="M58 130 L58 80 C 58 70, 54 65, 47 60 C 54 62, 60 65, 62 70 L62 130 Z" fill="var(--emerald-core)" opacity="0.95" />
+            <path d="M60 85 C 62 75, 70 70, 78 66" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <path d="M58 98 C 50 93, 42 88, 38 78" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <circle cx="60" cy="45" r="22" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
+            <circle cx="45" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="75" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="60" cy="30" r="14" fill="rgba(0, 220, 100, 0.08)" stroke="var(--mint-light)" stroke-width="1" />
+          </svg>
+        </div>
+        <!-- Panel 45deg -->
+        <div class="tree-panel angle-45">
+          <svg viewBox="0 0 120 150" class="tree-svg">
+            <path d="M30 130 L90 130" stroke="var(--glass-border)" stroke-width="1" fill="none" />
+            <path d="M58 130 L58 80 C 58 70, 54 65, 47 60 C 54 62, 60 65, 62 70 L62 130 Z" fill="var(--emerald-core)" opacity="0.95" />
+            <path d="M60 85 C 62 75, 70 70, 78 66" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <path d="M58 98 C 50 93, 42 88, 38 78" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <circle cx="60" cy="45" r="22" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
+            <circle cx="45" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="75" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="60" cy="30" r="14" fill="rgba(0, 220, 100, 0.08)" stroke="var(--mint-light)" stroke-width="1" />
+          </svg>
+        </div>
+        <!-- Panel 90deg -->
+        <div class="tree-panel angle-90">
+          <svg viewBox="0 0 120 150" class="tree-svg">
+            <path d="M30 130 L90 130" stroke="var(--glass-border)" stroke-width="1" fill="none" />
+            <path d="M58 130 L58 80 C 58 70, 54 65, 47 60 C 54 62, 60 65, 62 70 L62 130 Z" fill="var(--emerald-core)" opacity="0.95" />
+            <path d="M60 85 C 62 75, 70 70, 78 66" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <path d="M58 98 C 50 93, 42 88, 38 78" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <circle cx="60" cy="45" r="22" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
+            <circle cx="45" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="75" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="60" cy="30" r="14" fill="rgba(0, 220, 100, 0.08)" stroke="var(--mint-light)" stroke-width="1" />
+          </svg>
+        </div>
+        <!-- Panel 135deg -->
+        <div class="tree-panel angle-135">
+          <svg viewBox="0 0 120 150" class="tree-svg">
+            <path d="M30 130 L90 130" stroke="var(--glass-border)" stroke-width="1" fill="none" />
+            <path d="M58 130 L58 80 C 58 70, 54 65, 47 60 C 54 62, 60 65, 62 70 L62 130 Z" fill="var(--emerald-core)" opacity="0.95" />
+            <path d="M60 85 C 62 75, 70 70, 78 66" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <path d="M58 98 C 50 93, 42 88, 38 78" stroke="var(--emerald-core)" stroke-width="1.5" fill="none" />
+            <circle cx="60" cy="45" r="22" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
+            <circle cx="45" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="75" cy="55" r="16" fill="rgba(0, 220, 100, 0.05)" stroke="var(--emerald-core)" stroke-width="1" />
+            <circle cx="60" cy="30" r="14" fill="rgba(0, 220, 100, 0.08)" stroke="var(--mint-light)" stroke-width="1" />
+          </svg>
         </div>
       </div>
     </div>
@@ -366,59 +383,7 @@
 <script src="genlayer_bundle.js"></script>
 <script src="app.js"></script>
 <script>
-  // HUD Feed Mock Data and Engine
-  const mockLogs = [
-    { tag: "SYS.INIT", msg: "Establishing RPC link to GenLayer Testnet..." },
-    { tag: "NET.STATUS", msg: "Peer count: 12. State sync level: 100%." },
-    { tag: "CONTRACT.QUERY", msg: "Reading registry state for 'Sector Amazonia-4'..." },
-    { tag: "EVAL.START", msg: "Auditing Coordinates: -3.465, -62.215. Claim stake: 1.0 GEN." },
-    { tag: "WEB.SCRAPE", msg: "Scraping environmental document registry..." },
-    { tag: "AI.CONSENSUS", msg: "Querying semantic equivalence on native species density..." },
-    { tag: "AI.VERDICT", msg: "Species: Native Swietenia verified. Density match: PASS." },
-    { tag: "TX.STAGED", msg: "Proposing state commitment. TxHash: 0x9f32e...4d1a" },
-    { tag: "TX.COMMIT", msg: "Block 78192 validated. Proposer awarded +2.0 GEN." },
-    { tag: "SYS.IDLE", msg: "Awaiting next environmental audit submission..." }
-  ];
 
-  let logIndex = 0;
-  function startHudFeed() {
-    const feed = document.getElementById('hud-feed');
-    if (!feed) return;
-    feed.innerHTML = ''; // Clear scanner
-
-    // Populate initial logs
-    for (let i = 0; i < 4; i++) {
-      addNextLog(feed);
-    }
-
-    // Tick scrolling feed
-    setInterval(() => {
-      addNextLog(feed);
-    }, 4500);
-  }
-
-  function addNextLog(feed) {
-    const log = mockLogs[logIndex];
-    const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0];
-
-    const logDiv = document.createElement('div');
-    logDiv.className = 'hud-log';
-    logDiv.innerHTML = `
-      <span class="log-time">[${timeStr}]</span>
-      <span class="log-tag">// ${log.tag}</span>
-      <span class="log-msg">${log.msg}</span>
-    `;
-    
-    feed.appendChild(logDiv);
-    feed.scrollTop = feed.scrollHeight;
-
-    if (feed.childNodes.length > 8) {
-      feed.removeChild(feed.firstChild);
-    }
-
-    logIndex = (logIndex + 1) % mockLogs.length;
-  }
 
   // Dynamic stats calculator and project fetcher
   async function loadDashboardData() {
@@ -495,9 +460,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Start active logger HUD
-    startHudFeed();
-
     // Attempt loading stats state
     setTimeout(loadDashboardData, 1000);
     
