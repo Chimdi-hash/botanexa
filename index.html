@@ -52,7 +52,7 @@
       width: 100%;
     }
 
-    /* 3D Rotating Real Tree Styles */
+    /* 3D Rotating Volumetric Real Tree Styles */
     .tree-container {
       width: 100%;
       height: 300px;
@@ -77,13 +77,38 @@
       animation: float-bob-slow 6s ease-in-out infinite;
     }
 
+    .tree-rotator {
+      width: 160px;
+      height: 160px;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: spin-real-tree 18s linear infinite;
+    }
+
+    .tree-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      backface-visibility: visible;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tree-panel.angle-0   { transform: rotateY(0deg); }
+    .tree-panel.angle-45  { transform: rotateY(45deg); }
+    .tree-panel.angle-90  { transform: rotateY(90deg); }
+    .tree-panel.angle-135 { transform: rotateY(135deg); }
+
     .real-tree-img {
-      width: 170px;
-      height: 170px;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
-      border-radius: 50%;
-      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.35));
-      animation: spin-real-tree 15s linear infinite;
+      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.25));
+      mix-blend-mode: screen; /* Blends out the black background completely to show only the green tree! */
     }
 
     .dome-ring {
@@ -271,7 +296,24 @@
     <!-- Slowly Rotating 3D Real Tree Dome -->
     <div class="tree-container">
       <div class="tree-dome">
-        <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+        <div class="tree-rotator">
+          <!-- Panel 0deg -->
+          <div class="tree-panel angle-0">
+            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+          </div>
+          <!-- Panel 45deg -->
+          <div class="tree-panel angle-45">
+            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+          </div>
+          <!-- Panel 90deg -->
+          <div class="tree-panel angle-90">
+            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+          </div>
+          <!-- Panel 135deg -->
+          <div class="tree-panel angle-135">
+            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+          </div>
+        </div>
         <div class="dome-ring"></div>
       </div>
     </div>
