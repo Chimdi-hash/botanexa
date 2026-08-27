@@ -52,52 +52,57 @@
       width: 100%;
     }
 
-    /* 3D Rotating Tree Styles */
+    /* 3D Rotating Real Tree Styles */
     .tree-container {
       width: 100%;
       height: 300px;
       display: flex;
       justify-content: center;
       align-items: center;
-      perspective: 800px;
-      position: relative;
+      perspective: 1000px;
     }
 
-    .tree-rotator {
-      width: 200px;
-      height: 250px;
-      position: relative;
-      transform-style: preserve-3d;
-      animation: spin-tree 18s linear infinite;
-    }
-
-    .tree-panel {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      backface-visibility: visible;
+    .tree-dome {
+      width: 220px;
+      height: 220px;
+      background: rgba(1, 10, 5, 0.45);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+      transform-style: preserve-3d;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 220, 100, 0.1);
+      animation: float-bob-slow 6s ease-in-out infinite;
     }
 
-    .tree-panel.angle-0   { transform: rotateY(0deg); }
-    .tree-panel.angle-45  { transform: rotateY(45deg); }
-    .tree-panel.angle-90  { transform: rotateY(90deg); }
-    .tree-panel.angle-135 { transform: rotateY(135deg); }
-
-    .tree-svg {
-      width: 200px;
-      height: 250px;
-      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.25));
+    .real-tree-img {
+      width: 170px;
+      height: 170px;
+      object-fit: contain;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.35));
+      animation: spin-real-tree 15s linear infinite;
     }
 
-    @keyframes spin-tree {
+    .dome-ring {
+      position: absolute;
+      top: -10px; left: -10px; right: -10px; bottom: -10px;
+      border: 1px dashed rgba(0, 220, 100, 0.3);
+      border-radius: 50%;
+      animation: spin-ring-rev 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes spin-real-tree {
       from { transform: rotateY(0deg); }
       to   { transform: rotateY(360deg); }
+    }
+
+    @keyframes spin-ring-rev {
+      from { transform: rotate(-360deg); }
+      to   { transform: rotate(0deg); }
     }
 
     /* Minimalist Feature Cards */
@@ -263,65 +268,11 @@
       </div>
     </div>
 
-    <!-- Slowly Rotating 3D Tree -->
+    <!-- Slowly Rotating 3D Real Tree Dome -->
     <div class="tree-container">
-      <div class="tree-rotator">
-        <!-- Panel 0deg -->
-        <div class="tree-panel angle-0">
-          <svg viewBox="0 0 120 150" class="tree-svg">
-            <path d="M20 135 C 40 135, 45 130, 60 130 C 75 130, 80 135, 100 135" stroke="var(--glass-border)" stroke-width="1" fill="none" />
-            <path d="M54 135 C52 110, 48 95, 48 80 C48 70, 43 65, 36 60 C42 62, 47 67, 50 72 C53 60, 50 50, 42 45 C48 48, 52 53, 54 60 C58 48, 65 42, 75 38 C68 42, 64 48, 62 55 C66 65, 75 72, 85 75 C75 72, 68 68, 64 78 C64 95, 66 110, 64 135 Z" fill="var(--emerald-core)" opacity="0.95" />
-            <path d="M60 20 C45 20, 38 28, 38 40 C38 43, 39 46, 41 48 C33 50, 28 58, 28 66 C28 75, 35 82, 45 82 C48 82, 53 80, 56 76 C60 84, 70 86, 76 86 C86 86, 94 78, 94 68 C94 62, 90 56, 84 54 C88 45, 84 32, 72 30 C70 24, 66 20, 60 20 Z" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
-            <path d="M30 40 C28 42, 28 45, 31 44 C33 43, 33 40, 30 40 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M90 50 C88 52, 88 55, 91 54 C93 53, 93 50, 90 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M75 25 C73 27, 73 30, 76 29 C78 28, 78 25, 75 25 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M42 28 C40 30, 40 33, 43 32 C45 31, 45 28, 42 28 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M50 50 C48 52, 48 55, 51 54 C53 53, 53 50, 50 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M70 60 C68 62, 68 65, 71 64 C73 63, 73 60, 70 60 Z" fill="var(--mint-light)" opacity="0.7"/>
-          </svg>
-        </div>
-        <!-- Panel 45deg -->
-        <div class="tree-panel angle-45">
-          <svg viewBox="0 0 120 150" class="tree-svg">
-            <path d="M20 135 C 40 135, 45 130, 60 130 C 75 130, 80 135, 100 135" stroke="var(--glass-border)" stroke-width="1" fill="none" />
-            <path d="M54 135 C52 110, 48 95, 48 80 C48 70, 43 65, 36 60 C42 62, 47 67, 50 72 C53 60, 50 50, 42 45 C48 48, 52 53, 54 60 C58 48, 65 42, 75 38 C68 42, 64 48, 62 55 C66 65, 75 72, 85 75 C75 72, 68 68, 64 78 C64 95, 66 110, 64 135 Z" fill="var(--emerald-core)" opacity="0.95" />
-            <path d="M60 20 C45 20, 38 28, 38 40 C38 43, 39 46, 41 48 C33 50, 28 58, 28 66 C28 75, 35 82, 45 82 C48 82, 53 80, 56 76 C60 84, 70 86, 76 86 C86 86, 94 78, 94 68 C94 62, 90 56, 84 54 C88 45, 84 32, 72 30 C70 24, 66 20, 60 20 Z" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
-            <path d="M30 40 C28 42, 28 45, 31 44 C33 43, 33 40, 30 40 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M90 50 C88 52, 88 55, 91 54 C93 53, 93 50, 90 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M75 25 C73 27, 73 30, 76 29 C78 28, 78 25, 75 25 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M42 28 C40 30, 40 33, 43 32 C45 31, 45 28, 42 28 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M50 50 C48 52, 48 55, 51 54 C53 53, 53 50, 50 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M70 60 C68 62, 68 65, 71 64 C73 63, 73 60, 70 60 Z" fill="var(--mint-light)" opacity="0.7"/>
-          </svg>
-        </div>
-        <!-- Panel 90deg -->
-        <div class="tree-panel angle-90">
-          <svg viewBox="0 0 120 150" class="tree-svg">
-            <path d="M20 135 C 40 135, 45 130, 60 130 C 75 130, 80 135, 100 135" stroke="var(--glass-border)" stroke-width="1" fill="none" />
-            <path d="M54 135 C52 110, 48 95, 48 80 C48 70, 43 65, 36 60 C42 62, 47 67, 50 72 C53 60, 50 50, 42 45 C48 48, 52 53, 54 60 C58 48, 65 42, 75 38 C68 42, 64 48, 62 55 C66 65, 75 72, 85 75 C75 72, 68 68, 64 78 C64 95, 66 110, 64 135 Z" fill="var(--emerald-core)" opacity="0.95" />
-            <path d="M60 20 C45 20, 38 28, 38 40 C38 43, 39 46, 41 48 C33 50, 28 58, 28 66 C28 75, 35 82, 45 82 C48 82, 53 80, 56 76 C60 84, 70 86, 76 86 C86 86, 94 78, 94 68 C94 62, 90 56, 84 54 C88 45, 84 32, 72 30 C70 24, 66 20, 60 20 Z" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
-            <path d="M30 40 C28 42, 28 45, 31 44 C33 43, 33 40, 30 40 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M90 50 C88 52, 88 55, 91 54 C93 53, 93 50, 90 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M75 25 C73 27, 73 30, 76 29 C78 28, 78 25, 75 25 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M42 28 C40 30, 40 33, 43 32 C45 31, 45 28, 42 28 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M50 50 C48 52, 48 55, 51 54 C53 53, 53 50, 50 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M70 60 C68 62, 68 65, 71 64 C73 63, 73 60, 70 60 Z" fill="var(--mint-light)" opacity="0.7"/>
-          </svg>
-        </div>
-        <!-- Panel 135deg -->
-        <div class="tree-panel angle-135">
-          <svg viewBox="0 0 120 150" class="tree-svg">
-            <path d="M20 135 C 40 135, 45 130, 60 130 C 75 130, 80 135, 100 135" stroke="var(--glass-border)" stroke-width="1" fill="none" />
-            <path d="M54 135 C52 110, 48 95, 48 80 C48 70, 43 65, 36 60 C42 62, 47 67, 50 72 C53 60, 50 50, 42 45 C48 48, 52 53, 54 60 C58 48, 65 42, 75 38 C68 42, 64 48, 62 55 C66 65, 75 72, 85 75 C75 72, 68 68, 64 78 C64 95, 66 110, 64 135 Z" fill="var(--emerald-core)" opacity="0.95" />
-            <path d="M60 20 C45 20, 38 28, 38 40 C38 43, 39 46, 41 48 C33 50, 28 58, 28 66 C28 75, 35 82, 45 82 C48 82, 53 80, 56 76 C60 84, 70 86, 76 86 C86 86, 94 78, 94 68 C94 62, 90 56, 84 54 C88 45, 84 32, 72 30 C70 24, 66 20, 60 20 Z" fill="rgba(0, 220, 100, 0.08)" stroke="var(--emerald-core)" stroke-width="1.2" />
-            <path d="M30 40 C28 42, 28 45, 31 44 C33 43, 33 40, 30 40 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M90 50 C88 52, 88 55, 91 54 C93 53, 93 50, 90 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M75 25 C73 27, 73 30, 76 29 C78 28, 78 25, 75 25 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M42 28 C40 30, 40 33, 43 32 C45 31, 45 28, 42 28 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M50 50 C48 52, 48 55, 51 54 C53 53, 53 50, 50 50 Z" fill="var(--mint-light)" opacity="0.7"/>
-            <path d="M70 60 C68 62, 68 65, 71 64 C73 63, 73 60, 70 60 Z" fill="var(--mint-light)" opacity="0.7"/>
-          </svg>
-        </div>
+      <div class="tree-dome">
+        <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
+        <div class="dome-ring"></div>
       </div>
     </div>
   </section>
