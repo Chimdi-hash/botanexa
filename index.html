@@ -52,83 +52,7 @@
       width: 100%;
     }
 
-    /* 3D Rotating Volumetric Real Tree Styles */
-    .tree-container {
-      width: 100%;
-      height: 300px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      perspective: 1000px;
-    }
 
-    .tree-dome {
-      width: 220px;
-      height: 220px;
-      background: rgba(1, 10, 5, 0.45);
-      border: 1.5px solid var(--glass-border);
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      transform-style: preserve-3d;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 220, 100, 0.1);
-      animation: float-bob-slow 6s ease-in-out infinite;
-    }
-
-    .tree-rotator {
-      width: 160px;
-      height: 160px;
-      position: relative;
-      transform-style: preserve-3d;
-      animation: spin-real-tree 18s linear infinite;
-    }
-
-    .tree-panel {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      backface-visibility: visible;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .tree-panel.angle-0   { transform: rotateY(0deg); }
-    .tree-panel.angle-45  { transform: rotateY(45deg); }
-    .tree-panel.angle-90  { transform: rotateY(90deg); }
-    .tree-panel.angle-135 { transform: rotateY(135deg); }
-
-    .real-tree-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 0 15px rgba(0, 220, 100, 0.25));
-      mix-blend-mode: screen; /* Blends out the black background completely to show only the green tree! */
-    }
-
-    .dome-ring {
-      position: absolute;
-      top: -10px; left: -10px; right: -10px; bottom: -10px;
-      border: 1px dashed rgba(0, 220, 100, 0.3);
-      border-radius: 50%;
-      animation: spin-ring-rev 20s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes spin-real-tree {
-      from { transform: rotateY(0deg); }
-      to   { transform: rotateY(360deg); }
-    }
-
-    @keyframes spin-ring-rev {
-      from { transform: rotate(-360deg); }
-      to   { transform: rotate(0deg); }
-    }
 
     /* Minimalist Feature Cards */
     .feature-grid {
@@ -293,30 +217,8 @@
       </div>
     </div>
 
-    <!-- Slowly Rotating 3D Real Tree Dome -->
-    <div class="tree-container">
-      <div class="tree-dome">
-        <div class="tree-rotator">
-          <!-- Panel 0deg -->
-          <div class="tree-panel angle-0">
-            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
-          </div>
-          <!-- Panel 45deg -->
-          <div class="tree-panel angle-45">
-            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
-          </div>
-          <!-- Panel 90deg -->
-          <div class="tree-panel angle-90">
-            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
-          </div>
-          <!-- Panel 135deg -->
-          <div class="tree-panel angle-135">
-            <img src="real_tree.jpg" alt="Botanical Model" class="real-tree-img" />
-          </div>
-        </div>
-        <div class="dome-ring"></div>
-      </div>
-    </div>
+    <!-- Right side left empty for minimalist spacing -->
+    <div></div>
   </section>
 
   <!-- Global Stats Bar -->
