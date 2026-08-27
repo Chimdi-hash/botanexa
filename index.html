@@ -3,41 +3,159 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BOTANEXA | On-Chain Reforestation & Carbon Offset Registry</title>
-  <meta name="description" content="Botanexa utilizes GenLayer Intelligent Contracts and AI consensus to verify reforestation and carbon offset claims, putting an end to corporate greenwashing."/>
+  <title>BOTANEXA | On-Chain Environmental Audits</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
   <style>
-    /* Hero layout special styling */
+    /* Hero Section Two-Column Layout */
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 3rem;
+      align-items: center;
+      width: 100%;
+      padding-top: calc(var(--nav-height) + 1.5rem);
+      padding-bottom: 2.5rem;
+    }
+
+    .hero-text-block {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .hero-title {
+      text-align: left;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      background: linear-gradient(135deg, var(--white) 35%, var(--emerald-core) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.15;
+    }
+
+    .hero-desc {
+      text-align: left;
+      max-width: 100%;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
     .hero-buttons {
       display: flex;
       gap: 1rem;
-      justify-content: center;
-      margin-top: 1rem;
+      justify-content: flex-start;
+      margin-top: 0.5rem;
+      width: 100%;
     }
-    
+
+    /* Live HUD Monitor */
+    .hud-monitor {
+      background: rgba(1, 8, 4, 0.85);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--mint-light);
+      text-align: left;
+      height: 250px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 220, 100, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hud-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .hud-pulse {
+      width: 6px; height: 6px;
+      background: #00dc64;
+      border-radius: 50%;
+      animation: pulse-glow 2s infinite;
+    }
+
+    .hud-title {
+      font-size: 0.65rem;
+      color: var(--mid-gray);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hud-feed {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      scrollbar-width: none;
+    }
+
+    .hud-feed::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hud-log {
+      line-height: 1.4;
+      opacity: 0.9;
+      animation: slide-in-up 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+    }
+
+    .log-time {
+      color: var(--emerald-core);
+      margin-right: 0.4rem;
+    }
+
+    .log-tag {
+      color: var(--gold);
+      margin-right: 0.4rem;
+    }
+
+    .log-msg {
+      color: var(--off-white);
+    }
+
+    /* Minimalist Feature Cards */
     .feature-grid {
-      margin-top: 2rem;
-      margin-bottom: 2.5rem;
+      margin-top: 1rem;
+      margin-bottom: 3rem;
     }
 
     .feature-card {
       text-align: left;
       padding: 1.5rem;
+      border-radius: 16px;
     }
 
-    .feature-icon {
-      font-size: 1.6rem;
+    .feature-tag {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
       color: var(--emerald-core);
       margin-bottom: 0.8rem;
+      border: 1px solid rgba(0, 220, 100, 0.2);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      text-transform: uppercase;
     }
 
     .feature-title {
       font-size: 0.88rem;
       margin-bottom: 0.6rem;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .feature-desc {
@@ -48,7 +166,7 @@
 
     /* Recent verifications section */
     .recent-section {
-      margin-bottom: 3rem;
+      margin-bottom: 3.5rem;
       text-align: center;
     }
 
@@ -73,9 +191,9 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.7rem 1.2rem;
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.01);
       border: 1px solid var(--glass-border);
-      border-radius: var(--border-radius);
+      border-radius: 12px;
       transition: var(--transition);
       cursor: pointer;
     }
@@ -83,19 +201,36 @@
     .recent-item:hover {
       background: rgba(0, 220, 100, 0.04);
       border-color: var(--emerald-core);
-      transform: scale(1.02);
+      transform: translateY(-2px);
     }
 
     .recent-name {
       font-weight: 700;
       color: var(--white);
-      text-transform: capitalize;
+      font-size: 0.82rem;
     }
 
     .recent-action {
       font-family: var(--font-mono);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--emerald-core);
+    }
+
+    @media (max-width: 1024px) {
+      .hero-split {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .hero-text-block {
+        align-items: center;
+        text-align: center;
+      }
+      .hero-title, .hero-desc {
+        text-align: center;
+      }
+      .hero-buttons {
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -138,45 +273,62 @@
 
 <!-- MAIN HERO LAYOUT -->
 <main class="container">
-  <section class="hero-layout">
-    <div class="badge badge-emerald hero-badge">// Decentralized Ecological Trust</div>
-    <h1 class="hero-title">Verifying Earth's Green Canopy</h1>
-    <p class="hero-desc">
-      Botanexa integrates GenLayer Intelligent Contracts to audit corporate reforestation and carbon offset reports. 
-      Through financial staking and AI validator consensus, we establish an immutable, greenwashing-proof ledger of environmental claims.
-    </p>
-
-    <!-- Global Stats Bar -->
-    <div class="stats-bar glass-card grid-4">
-      <div class="stat-item">
-        <div class="stat-num" id="stat-trees">0</div>
-        <div class="stat-label">Trees Audited</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="stat-co2">0.0 t</div>
-        <div class="stat-label">CO₂ Offset / Yr</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="stat-projects">0</div>
-        <div class="stat-label">Active Forests</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num" id="stat-staked">0 GEN</div>
-        <div class="stat-label">Collateral Staked</div>
+  
+  <!-- Hero Split Section -->
+  <section class="hero-split">
+    <div class="hero-text-block">
+      <div class="badge badge-emerald">// Decentralized Ecological Trust</div>
+      <h1 class="hero-title">Verifying Earth's Green Canopy</h1>
+      <p class="hero-desc">
+        Botanexa integrates GenLayer Intelligent Contracts to audit corporate reforestation and carbon offset reports. 
+        Through financial staking and AI validator consensus, we establish an immutable, greenwashing-proof ledger of environmental claims.
+      </p>
+      <div class="hero-buttons">
+        <a href="registry.html" class="btn-primary">Explore Forest Registry</a>
+        <a href="propose.html" class="btn-secondary">Submit Reforestation Audit</a>
       </div>
     </div>
 
-    <!-- Call to Actions -->
-    <div class="hero-buttons">
-      <a href="registry.html" class="btn-primary">Explore Forest Registry</a>
-      <a href="propose.html" class="btn-secondary">Submit Reforestation Audit</a>
+    <!-- Active Audit HUD Monitor -->
+    <div class="hud-monitor">
+      <div class="hud-header">
+        <span class="hud-pulse"></span>
+        <span class="hud-title">GENLAYER ACTIVE AUDIT MONITOR</span>
+      </div>
+      <div class="hud-feed" id="hud-feed">
+        <div class="hud-log">
+          <span class="log-time">[00:00:00]</span>
+          <span class="log-tag">// SYS.INIT</span>
+          <span class="log-msg">Scanning GenLayer Studio Network...</span>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- Global Stats Bar -->
+  <div class="stats-bar glass-card grid-4" style="margin-top: 1rem; margin-bottom: 2.5rem; border-radius: 16px;">
+    <div class="stat-item">
+      <div class="stat-num" id="stat-trees">0</div>
+      <div class="stat-label">Trees Audited</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-co2">0.0 t</div>
+      <div class="stat-label">CO₂ Offset / Yr</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-projects">0</div>
+      <div class="stat-label">Active Forests</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="stat-staked">0 GEN</div>
+      <div class="stat-label">Collateral Staked</div>
+    </div>
+  </div>
 
   <!-- FEATURES -->
   <section class="feature-grid grid-3">
     <div class="glass-card feature-card">
-      <div class="feature-icon">🛡</div>
+      <div class="feature-tag">[ 01. SECURE STAKE ]</div>
       <h3 class="feature-title">Eco Staking Model</h3>
       <p class="feature-desc">
         Sponsors stake 1 GEN to submit audits. Honest data is permanently registered, earning a 2x GEN reward. Fraudulent, inflated, or invasive forestry claims are slashed.
@@ -184,7 +336,7 @@
     </div>
     
     <div class="glass-card feature-card">
-      <div class="feature-icon">👁</div>
+      <div class="feature-tag">[ 02. LLM CONSENSUS ]</div>
       <h3 class="feature-title">AI consensus validation</h3>
       <p class="feature-desc">
         GenLayer validators perform real-time text analysis of audit reports, cross-checking species invasive status and geographic coordinates against global botanical guidelines.
@@ -192,7 +344,7 @@
     </div>
 
     <div class="glass-card feature-card">
-      <div class="feature-icon">📊</div>
+      <div class="feature-tag">[ 03. VECTOR RENDERS ]</div>
       <h3 class="feature-title">Generative Visualization</h3>
       <p class="feature-desc">
         Every verified project receives a unique generative visualization representing the density, species diversity, and ecological health calculated by the smart contract.
@@ -214,6 +366,60 @@
 <script src="genlayer_bundle.js"></script>
 <script src="app.js"></script>
 <script>
+  // HUD Feed Mock Data and Engine
+  const mockLogs = [
+    { tag: "SYS.INIT", msg: "Establishing RPC link to GenLayer Testnet..." },
+    { tag: "NET.STATUS", msg: "Peer count: 12. State sync level: 100%." },
+    { tag: "CONTRACT.QUERY", msg: "Reading registry state for 'Sector Amazonia-4'..." },
+    { tag: "EVAL.START", msg: "Auditing Coordinates: -3.465, -62.215. Claim stake: 1.0 GEN." },
+    { tag: "WEB.SCRAPE", msg: "Scraping environmental document registry..." },
+    { tag: "AI.CONSENSUS", msg: "Querying semantic equivalence on native species density..." },
+    { tag: "AI.VERDICT", msg: "Species: Native Swietenia verified. Density match: PASS." },
+    { tag: "TX.STAGED", msg: "Proposing state commitment. TxHash: 0x9f32e...4d1a" },
+    { tag: "TX.COMMIT", msg: "Block 78192 validated. Proposer awarded +2.0 GEN." },
+    { tag: "SYS.IDLE", msg: "Awaiting next environmental audit submission..." }
+  ];
+
+  let logIndex = 0;
+  function startHudFeed() {
+    const feed = document.getElementById('hud-feed');
+    if (!feed) return;
+    feed.innerHTML = ''; // Clear scanner
+
+    // Populate initial logs
+    for (let i = 0; i < 4; i++) {
+      addNextLog(feed);
+    }
+
+    // Tick scrolling feed
+    setInterval(() => {
+      addNextLog(feed);
+    }, 4500);
+  }
+
+  function addNextLog(feed) {
+    const log = mockLogs[logIndex];
+    const now = new Date();
+    const timeStr = now.toTimeString().split(' ')[0];
+
+    const logDiv = document.createElement('div');
+    logDiv.className = 'hud-log';
+    logDiv.innerHTML = `
+      <span class="log-time">[${timeStr}]</span>
+      <span class="log-tag">// ${log.tag}</span>
+      <span class="log-msg">${log.msg}</span>
+    `;
+    
+    feed.appendChild(logDiv);
+    feed.scrollTop = feed.scrollHeight;
+
+    if (feed.childNodes.length > 8) {
+      feed.removeChild(feed.firstChild);
+    }
+
+    logIndex = (logIndex + 1) % mockLogs.length;
+  }
+
   // Dynamic stats calculator and project fetcher
   async function loadDashboardData() {
     try {
@@ -289,7 +495,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Attempt loading, retry if SDK loads asynchronously
+    // Start active logger HUD
+    startHudFeed();
+
+    // Attempt loading stats state
     setTimeout(loadDashboardData, 1000);
     
     // Listen for wallet connections to refresh balances
