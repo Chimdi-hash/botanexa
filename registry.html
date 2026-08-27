@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registry — BOTANEXA | On-Chain Environmental Audits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* Split layout */
+    .registry-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: 100vh;
+      padding-top: var(--nav-height);
+    }
+
+    .registry-sidebar {
+      background: rgba(1, 10, 5, 0.75);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1.5rem;
+      gap: 1.5rem;
+      height: calc(100vh - var(--nav-height));
+      position: sticky;
+      top: var(--nav-height);
+      overflow-y: auto;
+    }
+
+    .sidebar-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--mid-gray);
+      text-transform: uppercase;
+    }
+
+    /* Filter tags */
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.6rem 1rem;
+      border-radius: var(--border-radius-sm);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      color: var(--mid-gray);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+    }
+
+    .filter-tag:hover, .filter-tag.active {
+      background: rgba(0, 220, 100, 0.08);
+      border-color: var(--emerald-core);
+      color: var(--emerald-bright);
+    }
+
+    /* Sidebar list */
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .project-card-item {
+      padding: 0.8rem 1.2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .project-card-item:hover, .project-card-item.selected {
+      background: rgba(0, 220, 100, 0.06);
+      border-color: var(--emerald-core);
+    }
+
+    .project-item-name {
+      font-weight: 700;
+      color: var(--white);
+      text-transform: capitalize;
+      font-size: 0.85rem;
+    }
+
+    .project-item-meta {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--mid-gray);
+      margin-top: 0.2rem;
+    }
+
+    /* Main Area */
+    .registry-main {
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      overflow-y: auto;
+      height: calc(100vh - var(--nav-height));
+    }
+
+    .idle-registry {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 1.5rem;
+      color: var(--mid-gray);
+    }
+
+    .idle-icon {
+      font-size: 3.5rem;
+      animation: float-bob-slow 4s ease infinite;
+    }
+
+    /* Canvas visualizer */
+    .visualizer-container {
+      background: rgba(0, 5, 2, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      position: relative;
+      min-height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0, 220, 100, 0.1);
+    }
+
+    #visualizer-canvas {
+      width: 100%;
+      height: 100%;
+      min-height: 350px;
+    }
+
+    .canvas-overlay {
+      position: absolute;
+      bottom: 1rem; left: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: rgba(0, 220, 100, 0.4);
+      pointer-events: none;
+    }
+
+    .audit-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1.5rem;
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .audit-card {
+      padding: 1.8rem;
+    }
+
+    .audit-title-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .audit-heading {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      color: var(--white);
+      text-transform: capitalize;
+    }
+
+    .audit-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--emerald-core);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .audit-text {
+      font-size: 0.88rem;
+      color: var(--mid-gray);
+      line-height: 1.7;
+    }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .botanical-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.3rem 0.8rem;
+      background: rgba(0, 220, 100, 0.05);
+      border: 1px solid rgba(0, 220, 100, 0.2);
+      border-radius: 50px;
+      color: var(--mint-light);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .registry-layout {
+        grid-template-columns: 1fr;
+      }
+      .registry-sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+      }
+      .registry-main {
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div id="particle-field" class="particle-field"></div>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🌿</span> BOTANEXA
+  </a>
+
+  <div class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="registry.html" class="active">Registry</a></li>
+    <li><a href="propose.html">Submit Audit</a></li>
+    <li><a href="about.html">About Trust</a></li>
+    <li class="wallet-nav-item">
+      <button id="connect-wallet-btn" class="btn-wallet">
+        ⬡ Connect Wallet
+      </button>
+      <div id="wallet-info-bar" class="wallet-info" style="display:none;">
+        <span id="wallet-balance-display" class="wallet-balance"></span>
+        <span id="wallet-address-display" class="wallet-address"></span>
+        <button id="disconnect-btn" class="btn-disconnect">Disconnect</button>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- EXPLORER GRID -->
+<div class="registry-layout">
+  
+  <!-- LEFT SIDEBAR: Search and Project Lists -->
+  <aside class="registry-sidebar">
+    <div>
+      <p class="sidebar-label" style="margin-bottom:0.5rem;">// Search Forest</p>
+      <input type="text" id="search-input" class="form-control" placeholder="e.g. Amazonia, Green Canopy..." style="padding:0.75rem 1rem;" onkeyup="filterProjects()"/>
+    </div>
+
+    <div class="filter-group">
+      <p class="sidebar-label">// Category Filter</p>
+      <button class="filter-tag active" onclick="setFilter('ALL', this)">All Projects</button>
+      <button class="filter-tag" onclick="setFilter('NATIVE', this)">Native Species</button>
+      <button class="filter-tag" onclick="setFilter('INVASIVE', this)">Endangered Zones</button>
+    </div>
+
+    <div>
+      <p class="sidebar-label" style="margin-bottom:0.8rem;">// Audited Projects</p>
+      <div class="project-list" id="sidebar-projects-list">
+        <div style="font-size:0.75rem;color:var(--mid-gray);text-align:center;padding:1rem;">
+          Reading smart contract...
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN REGISTRY SECTION -->
+  <main class="registry-main">
+    
+    <!-- IDLE STATE -->
+    <div class="idle-registry" id="idle-view">
+      <div class="idle-icon">🌲</div>
+      <h2>Select Reforestation Project</h2>
+      <p style="max-width:400px;font-size:0.85rem;line-height:1.7;">
+        Select an audited forest from the left panel to explore its on-chain botanical metadata, carbon offsets, and generative health visualizer.
+      </p>
+    </div>
+
+    <!-- RESULT STATE -->
+    <div class="result-registry" id="details-view" style="display:none;">
+      
+      <!-- Visualizer canvas -->
+      <div class="visualizer-container">
+        <canvas id="visualizer-canvas"></canvas>
+        <div class="canvas-overlay" id="visualizer-metadata">BOTANEXA FOREST RENDERER v1.0</div>
+      </div>
+
+      <!-- Audit Details Card Grid -->
+      <div class="audit-grid">
+        
+        <!-- Left: Project overview -->
+        <div class="glass-card audit-card" style="display:flex;flex-direction:column;gap:1.5rem;">
+          <div class="audit-title-block">
+            <div>
+              <h1 class="audit-heading" id="project-title">—</h1>
+              <div class="badge-bar">
+                <span class="badge badge-emerald" id="project-suitability">—</span>
+                <span class="badge badge-gold" id="project-carbon-badge">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="audit-section-label">// Ecological Impact & Role</p>
+            <p class="audit-text" id="project-role">—</p>
+          </div>
+
+          <div>
+            <p class="audit-section-label">// AI Validator Consensus Reasoning</p>
+            <p class="audit-text" id="project-reasoning" style="font-style:italic;color:var(--white);">—</p>
+          </div>
+
+          <div class="grid-2" style="border-top:1px solid var(--glass-border);padding-top:1.5rem;">
+            <div>
+              <p class="audit-section-label">// GPS Coordinates</p>
+              <p class="audit-text" id="project-gps" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--white);">—</p>
+            </div>
+            <div>
+              <p class="audit-section-label">// Tree Count</p>
+              <p class="audit-text" id="project-trees" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--white);">—</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Botanical categories -->
+        <div class="glass-card audit-card" style="display:flex;flex-direction:column;gap:1.5rem;">
+          <div>
+            <p class="audit-section-label">// Species Planted</p>
+            <div class="tag-container" id="project-species-tags">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div>
+            <p class="audit-section-label">// Companion Botanical Species</p>
+            <div class="tag-container" id="project-companion-tags">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div>
+            <p class="audit-section-label">// Fact Sheet</p>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;" id="project-facts-list">
+              <!-- Rendered dynamically -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="genlayer_bundle.js"></script>
+<script src="app.js"></script>
+<script>
+  let allProjects = [];
+  let filteredProjects = [];
+  let selectedProject = null;
+  let activeFilter = 'ALL';
+  let canvasAnimationId = null;
+
+  async function loadRegistryData() {
+    try {
+      if (!window.readGenLayer) {
+        setTimeout(loadRegistryData, 1000);
+        return;
+      }
+
+      const recentRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_recent_projects');
+      const recentList = typeof recentRaw === 'string' ? JSON.parse(recentRaw) : recentRaw;
+
+      const sidebarList = document.getElementById('sidebar-projects-list');
+      if (!recentList || recentList.length === 0) {
+        sidebarList.innerHTML = `<div style="font-size:0.75rem;color:var(--mid-gray);text-align:center;padding:1rem;">No verified projects.</div>`;
+        return;
+      }
+
+      allProjects = [];
+      for (let name of recentList) {
+        try {
+          const cachedRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [name]);
+          const projectData = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
+          if (projectData && projectData.explanation) {
+            allProjects.push(projectData.explanation);
+          }
+        } catch (e) {
+          console.warn("Failed to fetch project details:", e);
+        }
+      }
+
+      filterProjects();
+
+      // Check URL parameters for search term
+      const urlParams = new URLSearchParams(window.location.search);
+      const searchParam = urlParams.get('search');
+      if (searchParam) {
+        const matchingProject = allProjects.find(p => p.project_name.toLowerCase() === searchParam.toLowerCase());
+        if (matchingProject) {
+          selectProject(matchingProject);
+        }
+      }
+
+    } catch (err) {
+      console.error("Registry load error:", err);
+    }
+  }
+
+  function setFilter(filter, el) {
+    document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter = filter;
+    filterProjects();
+  }
+
+  function filterProjects() {
+    const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+    
+    filteredProjects = allProjects.filter(p => {
+      const matchesSearch = p.project_name.toLowerCase().includes(searchVal) || 
+                            (p.species_planted || []).some(s => s.toLowerCase().includes(searchVal));
+      
+      let matchesFilter = true;
+      if (activeFilter === 'NATIVE') {
+        matchesFilter = p.ecological_suitability.toLowerCase().includes('native');
+      } else if (activeFilter === 'INVASIVE') {
+        matchesFilter = p.ecological_suitability.toLowerCase().includes('invasive') || p.ecological_suitability.toLowerCase().includes('unsuitable');
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+
+    renderSidebarList();
+  }
+
+  function renderSidebarList() {
+    const sidebarList = document.getElementById('sidebar-projects-list');
+    if (filteredProjects.length === 0) {
+      sidebarList.innerHTML = `<div style="font-size:0.75rem;color:var(--mid-gray);text-align:center;padding:1rem;">No matching projects.</div>`;
+      return;
+    }
+
+    sidebarList.innerHTML = filteredProjects.map(p => `
+      <div class="project-card-item ${selectedProject && selectedProject.project_name === p.project_name ? 'selected' : ''}" onclick="selectProjectByName('${p.project_name.replace(/'/g, "\\'")}')">
+        <div class="project-item-name">${p.project_name}</div>
+        <div class="project-item-meta">${p.tree_count.toLocaleString()} Trees · ${p.carbon_offset_tons.toFixed(1)} t CO₂</div>
+      </div>
+    `).join('');
+  }
+
+  function selectProjectByName(name) {
+    const proj = allProjects.find(p => p.project_name === name);
+    if (proj) selectProject(proj);
+  }
+
+  function selectProject(project) {
+    selectedProject = project;
+    renderSidebarList();
+
+    document.getElementById('idle-view').style.display = 'none';
+    document.getElementById('details-view').style.display = 'block';
+
+    // Populate overview
+    document.getElementById('project-title').textContent = project.project_name;
+    document.getElementById('project-suitability').textContent = project.ecological_suitability;
+    
+    // Setup Suitability Badge Theme
+    const suitabilityEl = document.getElementById('project-suitability');
+    suitabilityEl.className = 'badge';
+    if (project.ecological_suitability.toLowerCase().includes('highly suitable') || project.ecological_suitability.toLowerCase().includes('native')) {
+      suitabilityEl.classList.add('badge-emerald');
+    } else {
+      suitabilityEl.classList.add('badge-gray');
+    }
+
+    document.getElementById('project-carbon-badge').textContent = `Sequestration: ${project.carbon_offset_tons.toFixed(1)} Metric Tons/Yr`;
+    document.getElementById('project-role').textContent = project.ecological_role || 'No ecological report provided.';
+    document.getElementById('project-reasoning').textContent = `"${project.reasoning}"`;
+    document.getElementById('project-gps').textContent = project.location_coords;
+    document.getElementById('project-trees').textContent = project.tree_count.toLocaleString() + ' verified trees';
+
+    // Populate Species
+    const speciesContainer = document.getElementById('project-species-tags');
+    speciesContainer.innerHTML = (project.species_planted || [])
+      .map(s => `<span class="botanical-tag">${s}</span>`).join('') || '<span style="font-size:0.8rem;color:var(--dark-gray)">Not specified</span>';
+
+    // Populate Companions
+    const companionContainer = document.getElementById('project-companion-tags');
+    companionContainer.innerHTML = (project.companion_species || [])
+      .map(s => `<span class="botanical-tag" style="border-color:rgba(255,215,0,0.25);color:var(--gold);">${s}</span>`).join('') 
+      || '<span style="font-size:0.8rem;color:var(--dark-gray)">None verified</span>';
+
+    // Populate Facts
+    const factsList = document.getElementById('project-facts-list');
+    factsList.innerHTML = (project.key_facts || []).map(f => `
+      <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.82rem;color:var(--mid-gray);margin-bottom:0.3rem;">
+        <span style="color:var(--emerald-core)">▸</span>
+        <span>${f}</span>
+      </li>
+    `).join('') || '<li style="font-size:0.82rem;color:var(--dark-gray)">No key facts available.</li>';
+
+    // Render generative forest canvas
+    drawForestCanvas(project);
+  }
+
+  // ── Generative 2D Forest Canvas Drawing ──
+  function drawForestCanvas(project) {
+    if (canvasAnimationId) cancelAnimationFrame(canvasAnimationId);
+
+    const canvas = document.getElementById('visualizer-canvas');
+    const container = canvas.parentElement;
+    canvas.width = container.offsetWidth || 500;
+    canvas.height = 350;
+
+    const ctx = canvas.getContext('2d');
+    const density = Math.min(60, Math.max(12, Math.floor(project.tree_count / 100))); // Math tree density to draw
+    const speciesCount = (project.species_planted || []).length || 1;
+    const suitability = project.ecological_suitability.toLowerCase();
+
+    // Define tree shapes and profiles
+    const trees = [];
+    for (let i = 0; i < density; i++) {
+      const type = Math.floor(Math.random() * 3); // Deciduous, Coniferous, Shrub
+      const x = Math.random() * (canvas.width - 40) + 20;
+      const y = Math.random() * (canvas.height - 120) + 80;
+      const size = Math.random() * 18 + 12;
+      
+      // Dynamic color matching the ecological suitability
+      let leafColor, trunkColor = '#3b2512';
+      if (suitability.includes('highly suitable') || suitability.includes('native')) {
+        // Vibrant glowing emerald colors
+        const greenVariations = ['#00dc64', '#00f670', '#09c15d', '#a2ffd1'];
+        leafColor = greenVariations[Math.floor(Math.random() * greenVariations.length)];
+      } else if (suitability.includes('unsuitable') || suitability.includes('invasive')) {
+        // Yellowish, dry, or chaotic colors represent invasive/poor density
+        leafColor = '#8fa01c';
+      } else {
+        leafColor = '#06522c';
+      }
+
+      trees.push({ x, y, size, type, leafColor, trunkColor, windOffset: Math.random() * 10 });
+    }
+
+    // Sort trees by Y coordinate to achieve layering depth (furthest/highest drawn first)
+    trees.sort((a, b) => a.y - b.y);
+
+    let t = 0;
+    function animate() {
+      t += 0.015;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw ecological environment backdrop
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bgGrad.addColorStop(0, '#020f08');
+      bgGrad.addColorStop(0.7, '#041d10');
+      bgGrad.addColorStop(1, '#052a17');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw subtle sun/moon glow
+      ctx.beginPath();
+      ctx.arc(canvas.width - 80, 70, 80, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 220, 100, 0.04)';
+      ctx.fill();
+
+      // Draw ground soil layer
+      ctx.fillStyle = '#020b05';
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 30);
+      ctx.quadraticCurveTo(canvas.width / 2, canvas.height - 45, canvas.width, canvas.height - 25);
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.lineTo(0, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+
+      // Render trees with soft wind swaying
+      trees.forEach(tree => {
+        const sway = Math.sin(t + tree.windOffset) * 1.5;
+        
+        // Draw trunk
+        ctx.fillStyle = tree.trunkColor;
+        ctx.fillRect(tree.x - (tree.size * 0.15), tree.y, tree.size * 0.3, tree.size * 0.8);
+
+        // Draw foliage based on type
+        ctx.fillStyle = tree.leafColor;
+        ctx.beginPath();
+        
+        if (tree.type === 0) {
+          // Coniferous (Pine tree triangle shapes)
+          ctx.moveTo(tree.x + sway, tree.y - (tree.size * 0.9));
+          ctx.lineTo(tree.x - (tree.size * 0.6) + sway, tree.y);
+          ctx.lineTo(tree.x + (tree.size * 0.6) + sway, tree.y);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(tree.x + sway, tree.y - (tree.size * 1.3));
+          ctx.lineTo(tree.x - (tree.size * 0.45) + sway, tree.y - (tree.size * 0.4));
+          ctx.lineTo(tree.x + (tree.size * 0.45) + sway, tree.y - (tree.size * 0.4));
+          ctx.closePath();
+          ctx.fill();
+
+        } else if (tree.type === 1) {
+          // Deciduous (Rounded organic shapes)
+          ctx.arc(tree.x + sway, tree.y - (tree.size * 0.5), tree.size * 0.55, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(tree.x - (tree.size * 0.25) + sway, tree.y - (tree.size * 0.7), tree.size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(tree.x + (tree.size * 0.25) + sway, tree.y - (tree.size * 0.7), tree.size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Shrub / Pioneer bush shape
+          ctx.arc(tree.x + sway, tree.y - (tree.size * 0.35), tree.size * 0.45, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      // Canvas border framework overlay
+      ctx.strokeStyle = 'rgba(0, 220, 100, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+      // Label overlay
+      document.getElementById('visualizer-metadata').textContent = 
+        `GENERATIVE ${suitability.includes('invasive') ? 'DEGRADED' : 'HEALTHY'} FOREST · ${project.project_name.toUpperCase()} · ${density} RENDER NODES`;
+
+      canvasAnimationId = requestAnimationFrame(animate);
+    }
+
+    animate();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadRegistryData, 1000);
+    setTimeout(updateWalletUI, 1200);
+  });
+</script>
+</body>
+</html>

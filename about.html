@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Trust — BOTANEXA | On-Chain Environmental Audits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .about-layout {
+      padding-top: calc(var(--nav-height) + 3rem);
+      padding-bottom: 5rem;
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    .about-header {
+      text-align: center;
+    }
+
+    .about-title {
+      font-size: 2.2rem;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .concept-card {
+      margin-bottom: 2rem;
+    }
+
+    .concept-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--emerald-core);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .concept-text {
+      font-size: 0.92rem;
+      color: var(--mid-gray);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .concept-text strong {
+      color: var(--white);
+    }
+
+    /* Diagram wrapper */
+    .diagram-box {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: rgba(0, 5, 2, 0.4);
+      border: 1px dashed var(--glass-border);
+      border-radius: var(--border-radius);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--emerald-bright);
+    }
+  </style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div id="particle-field" class="particle-field"></div>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🌿</span> BOTANEXA
+  </a>
+
+  <div class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="registry.html">Registry</a></li>
+    <li><a href="propose.html">Submit Audit</a></li>
+    <li><a href="about.html" class="active">About Trust</a></li>
+    <li class="wallet-nav-item">
+      <button id="connect-wallet-btn" class="btn-wallet">
+        ⬡ Connect Wallet
+      </button>
+      <div id="wallet-info-bar" class="wallet-info" style="display:none;">
+        <span id="wallet-balance-display" class="wallet-balance"></span>
+        <span id="wallet-address-display" class="wallet-address"></span>
+        <button id="disconnect-btn" class="btn-disconnect">Disconnect</button>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<main class="container">
+  <div class="about-layout">
+    
+    <div class="about-header">
+      <div class="badge badge-emerald">// How it works</div>
+      <h1 class="about-title">The Mechanics of Decentralized Trust</h1>
+      <p style="color:var(--mid-gray);font-size:0.95rem;max-width:550px;margin:0 auto;line-height:1.7;">
+        Discover how GenLayer's AI-native blockchain eliminates central points of failure and prevents environmental fraud.
+      </p>
+    </div>
+
+    <!-- CONCEPT 1 -->
+    <section class="glass-card concept-card">
+      <h2 class="concept-title">1. The Trust Gap in Forestry</h2>
+      <p class="concept-text">
+        Corporate environmental, social, and governance (ESG) reporting is plagued by **greenwashing**. 
+        Companies buy offset certificates claiming to have planted forests, but verification is notoriously difficult. 
+        Traditional centralized oracles are vulnerable to bribe attempts, database tampering, and human bias. 
+      </p>
+      <p class="concept-text">
+        **Botanexa** solves this by shifting the responsibility to a decentralized, financially backed network of AI validators. 
+        Sponsors must back their reforestation claims with a **1 GEN collateral stake**. 
+        If their claim is proven false by the network, the stake is burned. If verified, they receive their stake back plus a 2x reward.
+      </p>
+    </section>
+
+    <!-- CONCEPT 2 -->
+    <section class="glass-card concept-card">
+      <h2 class="concept-title">2. Optimistic Democracy</h2>
+      <p class="concept-text">
+        GenLayer works on a consensus mechanism called **Optimistic Democracy**. 
+        Unlike traditional blockchains where every node must execute the exact same deterministic transactions, 
+        GenLayer operates probabilistically to handle natural language and subjective facts.
+      </p>
+      <p class="concept-text">
+        When an audit is submitted:
+        1. A **Leader Node** is selected to execute the intelligent contract's Python code and query the internet.
+        2. The Leader runs the AI validator prompt, evaluates the evidence webpage, and proposes a consensus state (Accepted/Rejected).
+        3. A randomized pool of **Validator Nodes** votes on whether the Leader's proposal is correct.
+        4. If the Leader acts dishonestly, they are democratically voted down and slashed, ensuring only valid ecological facts enter the block.
+      </p>
+      <div class="diagram-box">
+        [Proposer Staking] ➔ [Leader Node Runs Python Contract] ➔ [AI Scraping URL]<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
+        [Consensus Reached: Block Committed] 🖎 [Validators Vote on Leader Proposal]
+      </div>
+    </section>
+
+    <!-- CONCEPT 3 -->
+    <section class="glass-card concept-card">
+      <h2 class="concept-title">3. The Equivalence Principle</h2>
+      <p class="concept-text">
+        How do multiple independent AI nodes agree on subjective natural language reports? 
+        They rely on the **Equivalence Principle**. This principle states that while different LLMs (or the same LLM queried multiple times) may output slightly different words, their core semantic conclusion (the semantic equivalent) must be the same.
+      </p>
+      <p class="concept-text">
+        Botanexa's smart contract specifies strict, structured verification requirements inside a non-comparative prompt. 
+        The AI validators compare the semantic meaning of the web evidence against the proposer's fields. 
+        If the evidence validates that 5,000 native mahogany trees were planted at the exact GPS coordinates, 
+        the validators will agree on the `is_accurate: true` semantic result, even if their reasoning text is written in slightly different ways.
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<script src="genlayer_bundle.js"></script>
+<script src="app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(updateWalletUI, 1200);
+  });
+</script>
+</body>
+</html>

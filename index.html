@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BOTANEXA | On-Chain Reforestation & Carbon Offset Registry</title>
+  <meta name="description" content="Botanexa utilizes GenLayer Intelligent Contracts and AI consensus to verify reforestation and carbon offset claims, putting an end to corporate greenwashing."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* Hero layout special styling */
+    .hero-buttons {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+    
+    .feature-grid {
+      margin-top: 4rem;
+      margin-bottom: 5rem;
+    }
+
+    .feature-card {
+      text-align: left;
+      padding: 2.2rem;
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      color: var(--emerald-core);
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-title {
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--mid-gray);
+      line-height: 1.7;
+    }
+
+    /* Recent verifications section */
+    .recent-section {
+      margin-bottom: 6rem;
+      text-align: center;
+    }
+
+    .recent-header {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin-bottom: 2.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .recent-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .recent-item:hover {
+      background: rgba(0, 220, 100, 0.04);
+      border-color: var(--emerald-core);
+      transform: scale(1.02);
+    }
+
+    .recent-name {
+      font-weight: 700;
+      color: var(--white);
+      text-transform: capitalize;
+    }
+
+    .recent-action {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--emerald-core);
+    }
+  </style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div id="particle-field" class="particle-field"></div>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🌿</span> BOTANEXA
+  </a>
+
+  <div class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html" class="active">Dashboard</a></li>
+    <li><a href="registry.html">Registry</a></li>
+    <li><a href="propose.html">Submit Audit</a></li>
+    <li><a href="about.html">About Trust</a></li>
+    <li class="wallet-nav-item">
+      <button id="connect-wallet-btn" class="btn-wallet">
+        ⬡ Connect Wallet
+      </button>
+      <div id="wallet-info-bar" class="wallet-info" style="display:none;">
+        <span id="wallet-balance-display" class="wallet-balance"></span>
+        <span id="wallet-address-display" class="wallet-address"></span>
+        <button id="disconnect-btn" class="btn-disconnect">Disconnect</button>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- MAIN HERO LAYOUT -->
+<main class="container">
+  <section class="hero-layout">
+    <div class="badge badge-emerald hero-badge">// Decentralized Ecological Trust</div>
+    <h1 class="hero-title">Verifying Earth's Green Canopy</h1>
+    <p class="hero-desc">
+      Botanexa integrates GenLayer Intelligent Contracts to audit corporate reforestation and carbon offset reports. 
+      Through financial staking and AI validator consensus, we establish an immutable, greenwashing-proof ledger of environmental claims.
+    </p>
+
+    <!-- Global Stats Bar -->
+    <div class="stats-bar glass-card grid-4">
+      <div class="stat-item">
+        <div class="stat-num" id="stat-trees">0</div>
+        <div class="stat-label">Trees Audited</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-co2">0.0 t</div>
+        <div class="stat-label">CO₂ Offset / Yr</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-projects">0</div>
+        <div class="stat-label">Active Forests</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="stat-staked">0 GEN</div>
+        <div class="stat-label">Collateral Staked</div>
+      </div>
+    </div>
+
+    <!-- Call to Actions -->
+    <div class="hero-buttons">
+      <a href="registry.html" class="btn-primary">Explore Forest Registry</a>
+      <a href="propose.html" class="btn-secondary">Submit Reforestation Audit</a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="feature-grid grid-3">
+    <div class="glass-card feature-card">
+      <div class="feature-icon">🛡</div>
+      <h3 class="feature-title">Eco Staking Model</h3>
+      <p class="feature-desc">
+        Sponsors stake 1 GEN to submit audits. Honest data is permanently registered, earning a 2x GEN reward. Fraudulent, inflated, or invasive forestry claims are slashed.
+      </p>
+    </div>
+    
+    <div class="glass-card feature-card">
+      <div class="feature-icon">👁</div>
+      <h3 class="feature-title">AI consensus validation</h3>
+      <p class="feature-desc">
+        GenLayer validators perform real-time text analysis of audit reports, cross-checking species invasive status and geographic coordinates against global botanical guidelines.
+      </p>
+    </div>
+
+    <div class="glass-card feature-card">
+      <div class="feature-icon">📊</div>
+      <h3 class="feature-title">Generative Visualization</h3>
+      <p class="feature-desc">
+        Every verified project receives a unique generative visualization representing the density, species diversity, and ecological health calculated by the smart contract.
+      </p>
+    </div>
+  </section>
+
+  <!-- RECENT VERIFICATIONS -->
+  <section class="recent-section">
+    <h2 class="recent-header">// Recently Verified Forests</h2>
+    <div class="recent-list" id="recent-list">
+      <div style="font-size:0.85rem;color:var(--mid-gray);padding:2rem;">
+        Scanning GenLayer Studio state...
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="genlayer_bundle.js"></script>
+<script src="app.js"></script>
+<script>
+  // Dynamic stats calculator and project fetcher
+  async function loadDashboardData() {
+    try {
+      if (!window.readGenLayer) {
+        console.warn("GenLayer SDK bundle not loaded yet.");
+        renderDefaultStats();
+        return;
+      }
+
+      // Fetch list of recently verified projects
+      const recentRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_recent_projects');
+      const recentList = typeof recentRaw === 'string' ? JSON.parse(recentRaw) : recentRaw;
+
+      const listContainer = document.getElementById('recent-list');
+      if (!recentList || recentList.length === 0) {
+        listContainer.innerHTML = `
+          <div style="font-size:0.85rem;color:var(--mid-gray);padding:2rem;border:1px dashed var(--glass-border);border-radius:12px;">
+            No projects registered on this contract yet. Connect your wallet to submit the first audit!
+          </div>
+        `;
+        renderDefaultStats();
+        return;
+      }
+
+      // Render recent projects list
+      listContainer.innerHTML = recentList.slice(0, 5).reverse().map(name => `
+        <div class="recent-item" onclick="window.location.href='registry.html?search=${encodeURIComponent(name)}'">
+          <span class="recent-name">${name}</span>
+          <span class="recent-action">Explore Audit ➔</span>
+        </div>
+      `).join('');
+
+      // Aggregate statistics from all projects
+      let totalTrees = 0;
+      let totalCO2 = 0;
+      let activeCount = recentList.length;
+      let totalStaked = recentList.length * 1.0; // 1 GEN per project
+
+      for (let name of recentList) {
+        try {
+          const cachedRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [name]);
+          const projectData = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
+          if (projectData && projectData.explanation) {
+            totalTrees += parseInt(projectData.explanation.tree_count || 0);
+            totalCO2 += parseFloat(projectData.explanation.carbon_offset_tons || 0.0);
+          }
+        } catch (e) {
+          console.warn("Failed to fetch project detailed stats:", e);
+        }
+      }
+
+      // Render metrics
+      animateStats(totalTrees, totalCO2, activeCount, totalStaked);
+
+    } catch (err) {
+      console.error("Dashboard load error:", err);
+      renderDefaultStats();
+    }
+  }
+
+  function renderDefaultStats() {
+    document.getElementById('stat-trees').textContent = "0";
+    document.getElementById('stat-co2').textContent = "0.0 t";
+    document.getElementById('stat-projects').textContent = "0";
+    document.getElementById('stat-staked').textContent = "0 GEN";
+  }
+
+  function animateStats(trees, co2, active, staked) {
+    document.getElementById('stat-trees').textContent = trees.toLocaleString();
+    document.getElementById('stat-co2').textContent = co2.toFixed(1) + " t";
+    document.getElementById('stat-projects').textContent = active;
+    document.getElementById('stat-staked').textContent = staked + " GEN";
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Attempt loading, retry if SDK loads asynchronously
+    setTimeout(loadDashboardData, 1000);
+    
+    // Listen for wallet connections to refresh balances
+    window.addEventListener('load', () => {
+      setTimeout(updateWalletUI, 1200);
+    });
+  });
+</script>
+</body>
+</html>

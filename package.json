@@ -1,0 +1,15 @@
+{
+  "name": "botanexa",
+  "version": "1.0.0",
+  "description": "Botanexa — Decentralized Reforestation & Carbon Offset Audit Registry on GenLayer Studio",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "start": "npx serve . -l 3000",
+    "build": "echo 'Static site — no build step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  }
+}

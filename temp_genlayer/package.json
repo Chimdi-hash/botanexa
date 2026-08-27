@@ -1,0 +1,14 @@
+{
+  "name": "temp_genlayer",
+  "version": "1.0.0",
+  "description": "GenLayer JS SDK Bundler Wrapper for Botanexa",
+  "main": "wrapper.js",
+  "scripts": {
+    "build": "npx esbuild wrapper.js --bundle --minify --outfile=../genlayer_bundle.js"
+  },
+  "dependencies": {
+    "esbuild": "^0.28.1",
+    "genlayer-js": "^1.1.8",
+    "viem": "^2.54.3"
+  }
+}

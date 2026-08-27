@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Audit — BOTANEXA | On-Chain Environmental Audits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syncopate:wght@700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .propose-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      min-height: 100vh;
+      padding-top: var(--nav-height);
+    }
+
+    .propose-sidebar {
+      background: rgba(1, 10, 5, 0.75);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 2.5rem 2rem;
+      gap: 1.2rem;
+      height: calc(100vh - var(--nav-height));
+      position: sticky;
+      top: var(--nav-height);
+      overflow-y: auto;
+    }
+
+    .propose-main {
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - var(--nav-height));
+      text-align: center;
+    }
+
+    /* Idle instructions panel */
+    .idle-panel {
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .idle-shield {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 220, 100, 0.12) 0%, transparent 70%);
+      border: 1px solid rgba(0, 220, 100, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem;
+      animation: float-bob-slow 5s ease infinite;
+      box-shadow: 0 0 30px rgba(0, 220, 100, 0.05);
+    }
+
+    /* Lifecycle tracker */
+    .tracker-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem;
+      max-width: 650px;
+      animation: slide-in-up 0.5s ease both;
+    }
+
+    .tracker-panel.show { display: flex; }
+
+    .pulse-orb {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--emerald-core);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: 0 0 20px rgba(0, 220, 100, 0.3);
+      animation: pulse-glow 2s ease infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 15px rgba(0, 220, 100, 0.2);
+        border-color: var(--emerald-core);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(0, 220, 100, 0.5);
+        border-color: var(--emerald-bright);
+      }
+    }
+
+    /* Node lifecycle mapping */
+    .nodes-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .node-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .node-circle {
+      width: 45px; height: 45px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1.5px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: var(--transition);
+    }
+
+    .node-circle.active {
+      border-color: var(--emerald-core);
+      background: rgba(0, 220, 100, 0.08);
+      box-shadow: 0 0 15px rgba(0, 220, 100, 0.2);
+      animation: pulse-glow 1.5s ease infinite;
+    }
+
+    .node-circle.done {
+      border-color: #00dc64;
+      background: rgba(0, 220, 100, 0.15);
+      color: var(--white);
+    }
+
+    .node-line {
+      width: 30px; height: 1.5px;
+      background: var(--glass-border);
+      transition: var(--transition);
+    }
+
+    .node-line.active {
+      background: linear-gradient(90deg, #00dc64, var(--glass-border));
+    }
+
+    .node-line.done {
+      background: #00dc64;
+    }
+
+    .node-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--mid-gray);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Rewards Panel */
+    .reward-panel {
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 500px;
+      padding: 1.5rem 2rem;
+      background: rgba(0, 220, 100, 0.03);
+      border: 1px solid rgba(0, 220, 100, 0.2);
+      border-radius: var(--border-radius);
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reward-panel.show { display: flex; }
+
+    @media (max-width: 1024px) {
+      .propose-layout {
+        grid-template-columns: 1fr;
+      }
+      .propose-sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+      }
+      .propose-main {
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div id="particle-field" class="particle-field"></div>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <a class="logo" href="index.html">
+    <span class="logo-icon">🌿</span> BOTANEXA
+  </a>
+
+  <div class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+
+  <ul class="nav-links" id="nav-links">
+    <li><a href="index.html">Dashboard</a></li>
+    <li><a href="registry.html">Registry</a></li>
+    <li><a href="propose.html" class="active">Submit Audit</a></li>
+    <li><a href="about.html">About Trust</a></li>
+    <li class="wallet-nav-item">
+      <button id="connect-wallet-btn" class="btn-wallet">
+        ⬡ Connect Wallet
+      </button>
+      <div id="wallet-info-bar" class="wallet-info" style="display:none;">
+        <span id="wallet-balance-display" class="wallet-balance"></span>
+        <span id="wallet-address-display" class="wallet-address"></span>
+        <button id="disconnect-btn" class="btn-disconnect">Disconnect</button>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- LAYOUT -->
+<div class="propose-layout">
+  
+  <!-- LEFT SIDEBAR: Submission Form -->
+  <aside class="propose-sidebar">
+    <h2 style="font-size:1.1rem;text-transform:uppercase;margin-bottom:0.5rem;">// Submit Reforestation Audit</h2>
+    <p style="font-size:0.78rem;color:var(--mid-gray);line-height:1.6;margin-bottom:1rem;">
+      Fill in the reforestation audit coordinates and evidence to submit for decentralized verification. Requires staking <strong>1 GEN</strong>.
+    </p>
+
+    <div class="form-group">
+      <label class="form-label" for="project-name">Project Name</label>
+      <input type="text" id="project-name" class="form-control" placeholder="e.g. Amazonia Sector A" autocomplete="off"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="coords">GPS Coordinates</label>
+      <input type="text" id="coords" class="form-control" placeholder="e.g. -3.4653, -62.2159" autocomplete="off"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="species">Primary Species Planted</label>
+      <input type="text" id="species" class="form-control" placeholder="e.g. Swietenia macrophylla" autocomplete="off"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="trees">Tree Count</label>
+      <input type="number" id="trees" class="form-control" placeholder="e.g. 5000" min="1" autocomplete="off"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="evidence">Evidence Report URL</label>
+      <input type="url" id="evidence" class="form-control" placeholder="https://en.wikipedia.org/wiki/..." autocomplete="off"/>
+    </div>
+
+    <button class="btn-primary" style="width:100%;margin-top:0.8rem;" id="submit-proposal-btn" onclick="submitProposal()">
+      🧬 Submit Audit (Stake 1 GEN)
+    </button>
+  </aside>
+
+  <!-- MAIN VIEW: Lifecycle Tracking & Status -->
+  <main class="propose-main">
+    
+    <!-- IDLE STATE -->
+    <div class="idle-panel" id="propose-idle-view">
+      <div class="idle-shield">🛡</div>
+      <h2>Staking & Audit Lifecycle</h2>
+      <p style="font-size:0.88rem;color:var(--mid-gray);line-height:1.7;max-width:480px;margin:0 auto;">
+        Connect your MetaMask wallet, fill out the ecological parameters of the forest project, and submit. 
+        GenLayer validators will execute consensus checks. If accepted, you will earn <strong>+2 GEN</strong>!
+      </p>
+
+      <div class="glass-card" style="padding:1rem 1.5rem;border-color:rgba(0, 220, 100, 0.1);background:rgba(0,220,100,0.02);font-family:var(--font-mono);font-size:0.75rem;color:var(--emerald-core);margin-top:1rem;">
+        ⬡ Connect wallet to verify your credentials
+      </div>
+
+      <!-- Claim rewards card inside idle panel if user has rewards -->
+      <div class="reward-panel" id="claim-dashboard">
+        <div style="text-align:left;">
+          <p class="form-label" style="margin-bottom:0.1rem;">Pending Claimable Rewards</p>
+          <h3 id="claimable-rewards-num" style="color:var(--gold);font-family:var(--font-display);font-size:1.3rem;">0.0000 GEN</h3>
+        </div>
+        <button class="btn-primary" style="padding:0.7rem 1.2rem;font-size:0.75rem;" id="claim-rewards-btn" onclick="claimRewards()">Claim Reward</button>
+      </div>
+    </div>
+
+    <!-- TRACKER STATE -->
+    <div class="tracker-panel" id="propose-tracker-view">
+      <div class="pulse-orb" id="tracker-orb">🧬</div>
+      
+      <div>
+        <h2 id="tracker-title">Signing Transaction...</h2>
+        <p id="tracker-desc" style="font-size:0.88rem;color:var(--mid-gray);margin-top:0.5rem;max-width:450px;">
+          Please sign the MetaMask confirmation prompt. This will lock 1 GEN as audit verification collateral.
+        </p>
+      </div>
+
+      <!-- Nodes Animation row representing GenLayer consensus -->
+      <div class="nodes-row">
+        <!-- Node 1: Sign -->
+        <div class="node-item">
+          <div class="node-circle active" id="node-sign">✒</div>
+          <span class="node-label">Sign</span>
+        </div>
+        <div class="node-line" id="line-1"></div>
+        
+        <!-- Node 2: Broadcast -->
+        <div class="node-item">
+          <div class="node-circle" id="node-broadcast">📡</div>
+          <span class="node-label">Broadcast</span>
+        </div>
+        <div class="node-line" id="line-2"></div>
+        
+        <!-- Node 3: AI Audit -->
+        <div class="node-item">
+          <div class="node-circle" id="node-ai">🤖</div>
+          <span class="node-label">AI Audit</span>
+        </div>
+        <div class="node-line" id="line-3"></div>
+        
+        <!-- Node 4: Consensus -->
+        <div class="node-item">
+          <div class="node-circle" id="node-consensus">⚖</div>
+          <span class="node-label">Consensus</span>
+        </div>
+        <div class="node-line" id="line-4"></div>
+        
+        <!-- Node 5: Finalized -->
+        <div class="node-item">
+          <div class="node-circle" id="node-final">✓</div>
+          <span class="node-label">Verified</span>
+        </div>
+      </div>
+
+      <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--dark-gray);margin-top:1rem;" id="tracker-tx-hash-box" style="display:none;">
+        Tx Hash: <span id="tracker-tx-hash" style="color:var(--emerald-core);">—</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="genlayer_bundle.js"></script>
+<script src="app.js"></script>
+<script>
+  let isSubmitting = false;
+
+  async function submitProposal() {
+    const pName = document.getElementById('project-name').value.trim();
+    const coords = document.getElementById('coords').value.trim();
+    const species = document.getElementById('species').value.trim();
+    const trees = parseInt(document.getElementById('trees').value.trim());
+    const evidence = document.getElementById('evidence').value.trim();
+
+    if (!pName || !coords || !species || isNaN(trees) || trees <= 0 || !evidence) {
+      showToast('Please fill out all audit parameters correctly before submitting.', 'warning');
+      return;
+    }
+
+    if (!window.botanexaWallet.isConnected) {
+      showToast('Connect your wallet to sign the audit transaction.', 'warning');
+      const connected = await connectWallet();
+      if (!connected) return;
+    }
+
+    if (isSubmitting) return;
+    isSubmitting = true;
+    toggleFormInputs(false);
+
+    // Switch to tracker state
+    showTrackerView(true);
+    setTrackerState('sign', 'Sign Staking Transaction', 'Locking 1 GEN collateral. Please sign the MetaMask confirmation prompt.');
+
+    try {
+      if (!window.callGenLayer) throw new Error("GenLayer JS SDK not loaded.");
+
+      // Pre-check if project name already verified on-chain to save GEN
+      try {
+        const checkResult = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [pName]);
+        const checkData = typeof checkResult === 'string' ? JSON.parse(checkResult) : checkResult;
+        if (checkData && checkData.explanation) {
+          showToast(`ℹ Project "${pName}" already verified. Showing registry details.`, 'info');
+          window.location.href = `registry.html?search=${encodeURIComponent(pName)}`;
+          return;
+        }
+      } catch (e) {
+        console.warn("Precheck failed (non-fatal):", e);
+      }
+
+      // Invoke write contract propose_offset method staking 1 GEN (10^18 wei)
+      const txHash = await window.callGenLayer(
+        CONTRACT_ADDRESS,
+        'propose_offset',
+        [pName, coords, species, trees, evidence],
+        window.botanexaWallet.address,
+        '1000000000000000000' // 1 GEN
+      );
+
+      // Optimistic balance decrement in UI
+      const balEl = document.getElementById('wallet-balance-display');
+      if (balEl) {
+        const cur = parseFloat(balEl.textContent);
+        if (!isNaN(cur)) balEl.textContent = `${Math.max(0, cur - 1).toFixed(4)} GEN`;
+      }
+
+      showToast(`Signed! Tx Hash: ${txHash.slice(0, 10)}... Broadcasting to GenLayer network.`, 'info');
+      document.getElementById('tracker-tx-hash-box').style.display = 'block';
+      document.getElementById('tracker-tx-hash').textContent = txHash;
+
+      // Broadcast state
+      setTrackerState('broadcast', 'Broadcasting Transaction', 'Broadcasting block metadata to GenLayer Studio RPC network...');
+      await sleep(3000);
+
+      // AI Audit state
+      setTrackerState('ai', 'AI Validators Auditing Web Data', 'AI validators are fetching the evidence report URL and analyzing structural data...');
+      
+      // Poll transaction status
+      const txStatus = await pollTransactionStatus(txHash);
+
+      if (txStatus.isError) {
+        throw new Error("Validation Transaction failed. The contract raised a GenVM exception (e.g. project already verified or invalid credentials).");
+      }
+
+      setTrackerState('consensus', 'Agreeing Consensus Resolution', 'Validator nodes are agreeing on the report accuracy via Optimistic Democracy...');
+      await sleep(4000);
+
+      // Final status check from contract history
+      setTrackerState('final', 'Verifying On-Chain Status', 'Checking final contract history entries...');
+      await sleep(2000);
+
+      const statusObj = await readProposalStatusWithRetry(pName, window.botanexaWallet.address, 6);
+
+      if (!statusObj || statusObj.status === 'PENDING') {
+        // Fallback check cache directly
+        try {
+          const cached = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [pName]);
+          const cachedData = typeof cached === 'string' ? JSON.parse(cached) : cached;
+          if (cachedData && cachedData.explanation) {
+            showVerificationSuccess(cachedData.explanation, txHash);
+            return;
+          }
+        } catch (e) {
+          console.warn("Fallback query failed:", e);
+        }
+        
+        showToast('⏳ Consensus processing is taking longer than expected. Check status on explorer.', 'warning', 10000);
+        resetTrackerView();
+        return;
+      }
+
+      if (statusObj.status === 'REJECTED') {
+        showVerificationFailure(statusObj.reasoning, txHash);
+      } else {
+        // Load details from cache
+        const cachedRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [pName]);
+        const cachedData = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
+        showVerificationSuccess(cachedData.explanation, txHash);
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast(err.message, 'error', 10000);
+      resetTrackerView();
+    } finally {
+      isSubmitting = false;
+      toggleFormInputs(true);
+      refreshBalance();
+    }
+  }
+
+  function toggleFormInputs(enable) {
+    document.getElementById('project-name').disabled = !enable;
+    document.getElementById('coords').disabled = !enable;
+    document.getElementById('species').disabled = !enable;
+    document.getElementById('trees').disabled = !enable;
+    document.getElementById('evidence').disabled = !enable;
+    
+    const btn = document.getElementById('submit-proposal-btn');
+    btn.disabled = !enable;
+    btn.innerHTML = enable ? '🧬 Submit Audit (Stake 1 GEN)' : '<span class="loading-spinner"></span> Verification Running...';
+  }
+
+  function showTrackerView(show) {
+    document.getElementById('propose-idle-view').style.display = show ? 'none' : 'flex';
+    document.getElementById('propose-tracker-view').classList.toggle('show', show);
+  }
+
+  function setTrackerState(node, title, desc) {
+    document.getElementById('tracker-title').textContent = title;
+    document.getElementById('tracker-desc').textContent = desc;
+
+    // Reset nodes styles
+    const nodes = ['node-sign', 'node-broadcast', 'node-ai', 'node-consensus', 'node-final'];
+    const lines = ['line-1', 'line-2', 'line-3', 'line-4'];
+
+    const targetIdx = nodes.indexOf('node-' + node);
+    
+    nodes.forEach((nId, idx) => {
+      const el = document.getElementById(nId);
+      if (idx < targetIdx) {
+        el.className = 'node-circle done';
+      } else if (idx === targetIdx) {
+        el.className = 'node-circle active';
+      } else {
+        el.className = 'node-circle';
+      }
+    });
+
+    lines.forEach((lId, idx) => {
+      const el = document.getElementById(lId);
+      if (idx < targetIdx) {
+        el.className = 'node-line done';
+      } else if (idx === targetIdx) {
+        el.className = 'node-line active';
+      } else {
+        el.className = 'node-line';
+      }
+    });
+  }
+
+  async function pollTransactionStatus(txHash) {
+    const MAX_WAIT_MS = 600000;
+    const start = Date.now();
+    
+    while (Date.now() - start < MAX_WAIT_MS) {
+      await sleep(5000);
+      try {
+        if (window.getGenLayerTxStatus) {
+          const statusObj = await window.getGenLayerTxStatus(txHash);
+          if (statusObj.isFinalized) {
+            return statusObj;
+          }
+        }
+      } catch (e) {
+        console.warn("Polling RPC error:", e);
+      }
+    }
+    return { isFinalized: false, isSuccess: false, isError: false, timedOut: true };
+  }
+
+  async function readProposalStatusWithRetry(name, address, retries) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const res = await window.readGenLayer(CONTRACT_ADDRESS, 'get_proposal_status', [address, name]);
+        const data = typeof res === 'string' ? JSON.parse(res) : res;
+        if (data && data.status !== 'PENDING') return data;
+      } catch (e) {
+        console.warn(`Retry ${i+1} failed:`, e);
+      }
+      await sleep(4000);
+    }
+    return null;
+  }
+
+  function showVerificationSuccess(data, txHash) {
+    showTrackerView(false);
+    showToast(`✅ Forest Verified! Reward +2 GEN credited to your address.`, 'success', 12000);
+    
+    // Custom sweet alert style modal or page reload redirect
+    setTimeout(() => {
+      window.location.href = `registry.html?search=${encodeURIComponent(data.project_name)}`;
+    }, 3000);
+  }
+
+  function showVerificationFailure(reason, txHash) {
+    showTrackerView(false);
+    showToast(`❌ SLASHED — 1 GEN Burned. Reason: ${reason}`, 'error', 15000);
+  }
+
+  function resetTrackerView() {
+    showTrackerView(false);
+    document.getElementById('tracker-tx-hash-box').style.display = 'none';
+  }
+
+  // ── Reward Claim Functions ──
+  async function refreshBalance() {
+    if (!window.getNativeBalance || !window.botanexaWallet?.address) return;
+    const addr = window.botanexaWallet.address;
+
+    // Header updates
+    updateWalletUI();
+
+    // Reward Panel updates
+    try {
+      const rewardRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_pending_reward', [addr.toLowerCase()]);
+      const rewardWei = String(rewardRaw || '0');
+      const rewardGen = (Number(rewardWei) / 1e18).toFixed(4);
+
+      const panel = document.getElementById('claim-dashboard');
+      if (Number(rewardGen) > 0) {
+        document.getElementById('claimable-rewards-num').textContent = `${rewardGen} GEN`;
+        panel.style.display = 'flex';
+      } else {
+        panel.style.display = 'none';
+      }
+    } catch (e) {
+      console.warn("Rewards fetch error:", e);
+    }
+  }
+
+  async function claimRewards() {
+    if (!window.botanexaWallet?.isConnected) return;
+    const btn = document.getElementById('claim-rewards-btn');
+    
+    const originalText = btn.textContent;
+    btn.textContent = "Processing...";
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const txHash = await window.callGenLayer(CONTRACT_ADDRESS, 'withdraw_rewards', [], window.botanexaWallet.address, '0');
+      showToast('Claim submitted. Waiting for transaction finalization...', 'info');
+
+      const txStatus = await pollTransactionStatus(txHash);
+      if (txStatus.isError) {
+        throw new Error("Withdraw transaction failed on GenLayer.");
+      }
+
+      showToast('🌿 Rewards successfully withdrawn to your wallet!', 'success');
+      document.getElementById('claim-dashboard').style.display = 'none';
+      
+      // Wait for RPC state synchronization then refresh balance
+      await sleep(5000);
+      await refreshBalance();
+    } catch (err) {
+      console.error(err);
+      showToast('Claim failed: ' + err.message, 'error');
+    } finally {
+      btn.textContent = originalText;
+      btn.style.pointerEvents = 'auto';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set balance checks
+    setTimeout(refreshBalance, 1200);
+    
+    window.addEventListener('load', () => {
+      // Override shared wallet UI update to trigger balance refreshes
+      const origUI = window.updateWalletUI;
+      window.updateWalletUI = function() {
+        if (origUI) origUI();
+        refreshBalance();
+      };
+    });
+  });
+</script>
+</body>
+</html>
