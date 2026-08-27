@@ -1,5 +1,5 @@
 # Botanexa 🌿
-> **Decentralized Reforestation & Carbon Offset Audit Registry**
+> **Decentralized Reforestation & Carbon Offset Audit**
 > Built on the GenLayer Studio Network
 
 Botanexa is a decentralized, on-chain registry that audits and certifies corporate reforestation and carbon offset claims. By combining economic staking with GenLayer's AI-native consensus mechanism, Botanexa resolves the rampant trust deficit, greenwashing, and double-counting issues currently undermining the voluntary carbon markets.
