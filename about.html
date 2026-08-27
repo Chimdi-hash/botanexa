@@ -11,42 +11,50 @@
   <style>
     .about-layout {
       padding-top: calc(var(--nav-height) + 1.5rem);
-      padding-bottom: 2.5rem;
-      max-width: 800px;
+      padding-bottom: 3.5rem;
+      max-width: 860px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 2rem;
     }
 
     .about-header {
       text-align: center;
+      margin-bottom: 0.5rem;
     }
 
     .about-title {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       text-transform: uppercase;
       margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, var(--white) 30%, var(--emerald-core) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .concept-card {
-      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
     }
 
     .concept-title {
       font-family: var(--font-display);
       font-size: 0.9rem;
       color: var(--emerald-core);
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.8rem;
       text-transform: uppercase;
       border-bottom: 1px solid var(--glass-border);
       padding-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .concept-text {
-      font-size: 0.92rem;
+      font-size: 0.86rem;
       color: var(--mid-gray);
-      line-height: 1.8;
+      line-height: 1.7;
       margin-bottom: 1rem;
     }
 
@@ -54,17 +62,238 @@
       color: var(--white);
     }
 
-    /* Diagram wrapper */
-    .diagram-box {
+    /* Consensus Flow Timeline */
+    .consensus-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0.6rem;
       margin-top: 1.5rem;
-      padding: 1.5rem;
-      background: rgba(0, 5, 2, 0.4);
-      border: 1px dashed var(--glass-border);
+      width: 100%;
+    }
+
+    .flow-step {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-sm);
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      position: relative;
+    }
+
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--emerald-core);
+      font-weight: 700;
+    }
+
+    .step-title {
+      font-weight: 700;
+      color: var(--white);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .step-desc {
+      font-size: 0.68rem;
+      color: var(--mid-gray);
+      line-height: 1.4;
+    }
+
+    .flow-arrow {
+      color: var(--glass-border);
+      align-self: center;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    /* Interactive Simulator */
+    .simulator-box {
+      background: rgba(1, 10, 5, 0.9);
+      border: 1px solid var(--glass-border);
       border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+
+    .sim-header {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sim-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .sim-dot.red { background: #ff5f56; }
+    .sim-dot.yellow { background: #ffbd2e; }
+    .sim-dot.green { background: #27c93f; }
+
+    .sim-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--mid-gray);
+      margin-left: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+    }
+
+    .sim-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .sim-tab-btn {
+      flex: 1;
+      padding: 0.8rem;
+      background: transparent;
+      border: none;
+      color: var(--mid-gray);
       font-family: var(--font-mono);
       font-size: 0.72rem;
-      line-height: 1.6;
-      color: var(--emerald-bright);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .sim-tab-btn.active {
+      color: var(--emerald-core);
+      background: rgba(0, 220, 100, 0.05);
+      font-weight: 700;
+      border-bottom: 2px solid var(--emerald-core);
+    }
+
+    .sim-body {
+      padding: 1.2rem;
+    }
+
+    .sim-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .sim-node {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--border-radius-sm);
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .node-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .node-type {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--mid-gray);
+    }
+
+    .node-quote {
+      font-size: 0.78rem;
+      color: var(--off-white);
+      line-height: 1.5;
+      font-style: italic;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 0.5rem;
+      border-radius: 4px;
+      border-left: 2.5px solid var(--emerald-core);
+    }
+
+    .node-verdict {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .node-verdict.green-text { color: #00dc64; }
+    .node-verdict.red-text { color: #ff6b6b; }
+
+    .sim-consensus {
+      background: rgba(0, 220, 100, 0.03);
+      border: 1px dashed rgba(0, 220, 100, 0.25);
+      border-radius: var(--border-radius-sm);
+      padding: 0.8rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: var(--transition);
+    }
+
+    .sim-consensus.slashed {
+      background: rgba(255, 107, 107, 0.03);
+      border-color: rgba(255, 107, 107, 0.25);
+    }
+
+    .consensus-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--mid-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      min-width: 130px;
+    }
+
+    .consensus-match {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .match-badge {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #00dc64;
+    }
+
+    .match-badge.slashed-badge {
+      color: #ff6b6b;
+    }
+
+    .match-desc {
+      font-size: 0.78rem;
+      color: var(--off-white);
+      line-height: 1.4;
+    }
+
+    @media (max-width: 768px) {
+      .sim-grid {
+        grid-template-columns: 1fr;
+      }
+      .consensus-flow {
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      .flow-arrow {
+        transform: rotate(90deg);
+        padding: 0.2rem 0;
+      }
+      .sim-consensus {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -112,61 +341,121 @@
     <div class="about-header">
       <div class="badge badge-emerald">// How it works</div>
       <h1 class="about-title">The Mechanics of Decentralized Trust</h1>
-      <p style="color:var(--mid-gray);font-size:0.95rem;max-width:550px;margin:0 auto;line-height:1.7;">
-        Discover how GenLayer's AI-native blockchain eliminates central points of failure and prevents environmental fraud.
+      <p style="color:var(--mid-gray);font-size:0.85rem;max-width:550px;margin:0 auto;line-height:1.7;">
+        Discover how GenLayer's AI-native blockchain eliminates central verification targets and enforces mathematical trust in forest carbon offsets.
       </p>
     </div>
 
-    <!-- CONCEPT 1 -->
+    <!-- SECTION 1 -->
     <section class="glass-card concept-card">
-      <h2 class="concept-title">1. The Trust Gap in Forestry</h2>
+      <h2 class="concept-title">🛡 1. The Trust Gap in Forestry</h2>
       <p class="concept-text">
-        Corporate environmental, social, and governance (ESG) reporting is plagued by **greenwashing**. 
-        Companies buy offset certificates claiming to have planted forests, but verification is notoriously difficult. 
-        Traditional centralized oracles are vulnerable to bribe attempts, database tampering, and human bias. 
+        Corporate Environmental Social Governance (ESG) is plagued by <strong>greenwashing</strong>. 
+        Traditional carbon offset platforms rely on centralized auditing bureaus to verify that trees have actually been planted. 
+        These centralized oracles suffer from major structural weaknesses: they are single targets for database hacking, human bias, administrative delays, and corruption.
       </p>
       <p class="concept-text">
-        **Botanexa** solves this by shifting the responsibility to a decentralized, financially backed network of AI validators. 
-        Sponsors must back their reforestation claims with a **1 GEN collateral stake**. 
-        If their claim is proven false by the network, the stake is burned. If verified, they receive their stake back plus a 2x reward.
+        <strong>Botanexa</strong> eliminates human error by shifting the responsibility to a decentralized, financially backed network of AI validators. 
+        Instead of trust based on manual stamps, verification is written in the stone of an <strong>Intelligent Contract</strong>.
+        Claims are secured by a <strong>1 GEN collateral stake</strong> which is immediately slashed and burned if nodes disprove the ecological parameters.
       </p>
     </section>
 
-    <!-- CONCEPT 2 -->
+    <!-- SECTION 2 -->
     <section class="glass-card concept-card">
-      <h2 class="concept-title">2. Optimistic Democracy</h2>
+      <h2 class="concept-title">⛓ 2. Optimistic Democracy Consensus</h2>
       <p class="concept-text">
-        GenLayer works on a consensus mechanism called **Optimistic Democracy**. 
-        Unlike traditional blockchains where every node must execute the exact same deterministic transactions, 
-        GenLayer operates probabilistically to handle natural language and subjective facts.
+        Botanexa operates on GenLayer's <strong>Optimistic Democracy</strong> consensus. Traditional blockchains require nodes to run strictly deterministic math. GenLayer allows nodes to execute subjective, non-deterministic operations (like rendering web documentation or querying public maps via AI).
       </p>
       <p class="concept-text">
-        When an audit is submitted:
-        1. A **Leader Node** is selected to execute the intelligent contract's Python code and query the internet.
-        2. The Leader runs the AI validator prompt, evaluates the evidence webpage, and proposes a consensus state (Accepted/Rejected).
-        3. A randomized pool of **Validator Nodes** votes on whether the Leader's proposal is correct.
-        4. If the Leader acts dishonestly, they are democratically voted down and slashed, ensuring only valid ecological facts enter the block.
+        The audit workflow occurs in four key phases:
       </p>
-      <div class="diagram-box">
-        [Proposer Staking] ➔ [Leader Node Runs Python Contract] ➔ [AI Scraping URL]<br/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
-        [Consensus Reached: Block Committed] 🖎 [Validators Vote on Leader Proposal]
+      
+      <div class="consensus-flow">
+        <div class="flow-step">
+          <span class="step-num">STAGE 01</span>
+          <span class="step-title">Stake Staged</span>
+          <span class="step-desc">Proposer stakes 1 GEN to write carbon coordinates to TreeMap.</span>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">
+          <span class="step-num">STAGE 02</span>
+          <span class="step-title">Web Render</span>
+          <span class="step-desc">Leader crawls target evidence URLs non-deterministically.</span>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">
+          <span class="step-num">STAGE 03</span>
+          <span class="step-title">LLM Review</span>
+          <span class="step-desc">Leader compares claimed coordinates and trees with page text.</span>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-step">
+          <span class="step-num">STAGE 04</span>
+          <span class="step-title">Democratic Vote</span>
+          <span class="step-desc">Randomized nodes vote on leader proposal. Slashing occurs if bias is found.</span>
+        </div>
       </div>
     </section>
 
-    <!-- CONCEPT 3 -->
+    <!-- SECTION 3 -->
     <section class="glass-card concept-card">
-      <h2 class="concept-title">3. The Equivalence Principle</h2>
+      <h2 class="concept-title">🧬 3. The Equivalence Principle</h2>
       <p class="concept-text">
-        How do multiple independent AI nodes agree on subjective natural language reports? 
-        They rely on the **Equivalence Principle**. This principle states that while different LLMs (or the same LLM queried multiple times) may output slightly different words, their core semantic conclusion (the semantic equivalent) must be the same.
+        To allow independent AI models to reach consensus on subjective natural language reports, GenLayer relies on the <strong>Equivalence Principle</strong>. 
+        This rule asserts that while separate Large Language Models (LLMs) will produce different wording, their core semantic conclusion must align to achieve consensus.
       </p>
       <p class="concept-text">
-        Botanexa's smart contract specifies strict, structured verification requirements inside a non-comparative prompt. 
-        The AI validators compare the semantic meaning of the web evidence against the proposer's fields. 
-        If the evidence validates that 5,000 native mahogany trees were planted at the exact GPS coordinates, 
-        the validators will agree on the `is_accurate: true` semantic result, even if their reasoning text is written in slightly different ways.
+        Below is an interactive live simulator demonstrating how the Equivalence Principle processes different proposals:
       </p>
+
+      <!-- CONSENSUS SIMULATOR WIDGET -->
+      <div class="simulator-box">
+        <div class="sim-header">
+          <span class="sim-dot green"></span>
+          <span class="sim-dot yellow"></span>
+          <span class="sim-dot red"></span>
+          <span class="sim-title">GenLayer Consensus Simulator</span>
+        </div>
+        <div class="sim-tabs">
+          <button id="btn-tab-honest" class="sim-tab-btn active" onclick="switchSimTab('honest')">Honest Submission (Pass)</button>
+          <button id="btn-tab-fraud" class="sim-tab-btn" onclick="switchSimTab('fraud')">Fraudulent Claim (Slashed)</button>
+        </div>
+        <div class="sim-body">
+          <div class="sim-grid" id="sim-nodes-container">
+            <!-- Node A -->
+            <div class="sim-node">
+              <div class="node-meta">
+                <span class="badge badge-emerald">Validator Node A</span>
+                <span class="node-type">Llama-3-70B</span>
+              </div>
+              <div class="node-quote">
+                "Audit request matches coordinates swarm. Swietenia macrophylla logs confirmed. Density count fits 5,000 threshold."
+              </div>
+              <div class="node-verdict green-text">VERDICT: ACCEPT</div>
+            </div>
+            <!-- Node B -->
+            <div class="sim-node">
+              <div class="node-meta">
+                <span class="badge badge-emerald">Validator Node B</span>
+                <span class="node-type">Claude-3.5-Sonnet</span>
+              </div>
+              <div class="node-quote">
+                "Trees located at Amazonas coordinates. Mahogany species verified native. Count matches project submission parameters."
+              </div>
+              <div class="node-verdict green-text">VERDICT: ACCEPT</div>
+            </div>
+          </div>
+          
+          <div class="sim-consensus" id="sim-consensus-box">
+            <div class="consensus-label">Consensus Result</div>
+            <div class="consensus-match">
+              <span class="match-badge">SEMANTIC MATCH: ACCEPTED</span>
+              <span class="match-desc">Semantic conclusions are equivalent. The forest is verified on-chain. Proposer receives collateral back +2 GEN reward.</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -175,6 +464,93 @@
 <script src="genlayer_bundle.js"></script>
 <script src="app.js"></script>
 <script>
+  const simData = {
+    honest: {
+      nodes: [
+        {
+          name: "Validator Node A",
+          type: "Llama-3-70B",
+          quote: "Audit request matches coordinates swarm. Swietenia macrophylla logs confirmed. Density count fits 5,000 threshold.",
+          verdict: "VERDICT: ACCEPT",
+          isGreen: true
+        },
+        {
+          name: "Validator Node B",
+          type: "Claude-3.5-Sonnet",
+          quote: "Trees located at Amazonas coordinates. Mahogany species verified native. Count matches project submission parameters.",
+          verdict: "VERDICT: ACCEPT",
+          isGreen: true
+        }
+      ],
+      badge: "SEMANTIC MATCH: ACCEPTED",
+      desc: "Semantic conclusions are equivalent. The forest is verified on-chain. Proposer receives collateral back +2 GEN reward.",
+      isGreen: true
+    },
+    fraud: {
+      nodes: [
+        {
+          name: "Validator Node A",
+          type: "Llama-3-70B",
+          quote: "Target URL scrapes to a dry highway construction zone. Mahogany native density is zero. Coordinates mismatch.",
+          verdict: "VERDICT: REJECT",
+          isGreen: false
+        },
+        {
+          name: "Validator Node B",
+          type: "Claude-3.5-Sonnet",
+          quote: "No forest canopy detected at target GPS. Scraped registry logs show zero environmental activity. Rejecting claim.",
+          verdict: "VERDICT: REJECT",
+          isGreen: false
+        }
+      ],
+      badge: "SEMANTIC MATCH: REJECTED",
+      desc: "Contract rules violated. Fraudulent tree claim detected. Proposer's 1 GEN collateral stake is slashed and burned to 0x00000000.",
+      isGreen: false
+    }
+  };
+
+  function switchSimTab(tab) {
+    document.getElementById('btn-tab-honest').classList.toggle('active', tab === 'honest');
+    document.getElementById('btn-tab-fraud').classList.toggle('active', tab === 'fraud');
+
+    const data = simData[tab];
+    const nodesContainer = document.getElementById('sim-nodes-container');
+    const consensusContainer = document.getElementById('sim-consensus-box');
+
+    nodesContainer.innerHTML = data.nodes.map(n => `
+      <div class="sim-node">
+        <div class="node-meta">
+          <span class="badge ${n.isGreen ? 'badge-emerald' : 'badge-gold'}">${n.name}</span>
+          <span class="node-type">${n.type}</span>
+        </div>
+        <div class="node-quote" style="${n.isGreen ? '' : 'border-left-color: var(--gold);'}">
+          "${n.quote}"
+        </div>
+        <div class="node-verdict ${n.isGreen ? 'green-text' : 'red-text'}">${n.verdict}</div>
+      </div>
+    `).join('');
+
+    if (data.isGreen) {
+      consensusContainer.className = "sim-consensus";
+      consensusContainer.innerHTML = `
+        <div class="consensus-label">Consensus Result</div>
+        <div class="consensus-match">
+          <span class="match-badge">${data.badge}</span>
+          <span class="match-desc">${data.desc}</span>
+        </div>
+      `;
+    } else {
+      consensusContainer.className = "sim-consensus slashed";
+      consensusContainer.innerHTML = `
+        <div class="consensus-label">Consensus Result</div>
+        <div class="consensus-match">
+          <span class="match-badge slashed-badge">${data.badge}</span>
+          <span class="match-desc">${data.desc}</span>
+        </div>
+      `;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(updateWalletUI, 1200);
   });
