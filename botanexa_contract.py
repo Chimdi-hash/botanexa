@@ -76,7 +76,7 @@ class BotanexaRegistry(gl.Contract):
             current_balance = 9999999999999999999999
 
         current_total = int(self.total_pending_rewards)
-        if current_balance < current_total + (int(stake) * 2):
+        if current_balance < current_total + (int(stake) + ONE_GEN):
             raise Exception("Contract does not have enough treasury funds to back this reward. Please contact the team to fund the treasury.")
 
         # ── AI Validation Prompt Block ──
@@ -191,8 +191,9 @@ If the project is fully accurate, return:
         stake_int  = int(stake)
 
         if is_accurate:
-            # ── ACCEPTED: Add 2x stake to pending_rewards ledger ──
-            reward_wei = stake_int * 2
+            # ── ACCEPTED: Reward bonus is strictly capped at 1 GEN (stake returned + 1 GEN reward = 2 GEN) ──
+            reward_bonus = ONE_GEN
+            reward_wei = stake_int + reward_bonus
             
             # Track the reward for the user to pull later
             current = int(self.pending_rewards.get(caller_str, "0"))
