@@ -48,6 +48,8 @@ body {
   font-size: 0.84rem;
   line-height: 1.6;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   position: relative;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -737,4 +739,121 @@ a:hover {
   .glass-card {
     padding: 1.5rem;
   }
+
+  .site-footer {
+    padding: 1.5rem 1rem;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .footer-brand {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+}
+
+/* ── Universal Site Footer ── */
+.site-footer {
+  background: rgba(1, 10, 5, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--glass-border);
+  padding: 1.2rem 2rem;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.78rem;
+  color: var(--mid-gray);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--white);
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+}
+
+.footer-tagline {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--dark-gray);
+  letter-spacing: 0.05em;
+}
+
+.footer-center {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--off-white);
+  text-align: center;
+}
+
+.footer-author {
+  color: var(--emerald-bright);
+  font-weight: 700;
+}
+
+.footer-genlayer-link {
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255, 215, 0, 0.4);
+  transition: var(--transition);
+}
+
+.footer-genlayer-link:hover {
+  color: #fff;
+  border-bottom-color: var(--gold);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-doc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0, 220, 100, 0.06);
+  border: 1px solid var(--glass-border);
+  color: var(--emerald-core);
+  padding: 0.35rem 0.8rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.footer-doc-btn:hover {
+  background: rgba(0, 220, 100, 0.15);
+  border-color: var(--emerald-core);
+  color: var(--white);
+  transform: translateY(-1px);
 }

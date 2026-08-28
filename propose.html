@@ -12,8 +12,9 @@
     .propose-layout {
       display: grid;
       grid-template-columns: 420px 1fr;
-      min-height: 100vh;
+      min-height: calc(100vh - var(--nav-height));
       padding-top: var(--nav-height);
+      flex: 1 0 auto;
     }
 
     .propose-sidebar {
@@ -351,6 +352,29 @@
 
   </main>
 </div>
+
+<!-- UNIVERSAL FOOTER -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <a href="index.html" class="footer-logo">
+        <span class="logo-icon">🌿</span> BOTANEXA
+      </a>
+      <span class="footer-tagline">// Decentralized Ecological Trust</span>
+    </div>
+    
+    <div class="footer-center">
+      <span>Built by <strong class="footer-author">u_stacklabs</strong> on <a href="https://docs.genlayer.com" target="_blank" rel="noopener noreferrer" class="footer-genlayer-link">GENLAYER</a></span>
+    </div>
+
+    <div class="footer-links">
+      <a href="https://docs.genlayer.com" target="_blank" rel="noopener noreferrer" class="footer-doc-btn">
+        <span>GenLayer Docs</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+      </a>
+    </div>
+  </div>
+</footer>
 
 <script src="genlayer_bundle.js"></script>
 <script src="app.js"></script>
