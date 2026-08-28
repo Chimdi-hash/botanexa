@@ -1,13 +1,13 @@
 # Botanexa Carbon Offset & Reforestation Audit Registry
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-
 from genlayer import *
 import json
 
 @gl.evm.contract_interface
 class _Recipient:
-    class View: pass
-    class Write: pass
+    class View:
+        pass
+    class Write:
+        pass
 
 class BotanexaRegistry(gl.Contract):
     """
@@ -16,22 +16,21 @@ class BotanexaRegistry(gl.Contract):
     ECONOMIC MODEL:
     - Staking requirement: 1 GEN per project audit proposal.
     - VERIFIED  -> Proposer earns 2 GEN (1 GEN stake returned + 1 GEN reward).
-    - REJECTED  -> 1 GEN stake is burned (sent to null address).
-    This creates an immediate financial penalty for greenwashing or ecological falsification.
+    - REJECTED  -> 1 GEN stake is burned to null address.
     """
 
     # ── Storage ───────────────────────────────────────────────────
     query_history:        TreeMap[str, str]   # lower(address)      -> JSON history list
     verified_projects:    TreeMap[str, str]   # lower(project_name) -> JSON project data
     pending_rewards:      TreeMap[str, str]   # lower(address)      -> wei amount string
-    total_pending_rewards: str                 # Tracks global outstanding reward obligations in wei string
+    total_pending_rewards: u256                # Tracks global outstanding reward obligations
     total_queries:        u256
     recent_projects_list: str                 # JSON list of recently verified project names
 
     def __init__(self):
         self.total_queries = u256(0)
-        self.recent_projects_list = json.dumps([])
-        self.total_pending_rewards = "0"
+        self.recent_projects_list = "[]"
+        self.total_pending_rewards = u256(0)
 
     # ── Helpers ───────────────────────────────────────────────────
 
@@ -43,46 +42,40 @@ class BotanexaRegistry(gl.Contract):
     # ── Core Staking + AI Validation ─────────────────────────────
 
     @gl.public.write.payable
-    def fund_treasury(self):
+    def fund_treasury(self) -> None:
         """Allow anyone (or the owner) to deposit GEN into the reward treasury."""
         pass
 
     @gl.public.write.payable
-    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: int, evidence_url: str):
+    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: int, evidence_url: str) -> None:
         caller    = gl.message.sender_address
         stake     = gl.message.value
-        ONE_GEN   = 1000000000000000000      # 1e18 wei
+        ONE_GEN   = u256(1000000000000000000)      # 1e18 wei
 
         if stake < ONE_GEN:
-            raise Exception("Must stake at least 1 GEN to propose a project audit.")
+            raise gl.vm.UserError("Must stake at least 1 GEN to propose a project audit.")
 
         project_clean = project_name.strip()
         project_lower = project_clean.lower()
 
         if not project_lower:
-            raise Exception("Project name cannot be empty.")
+            raise gl.vm.UserError("Project name cannot be empty.")
 
         if project_lower in self.verified_projects:
-            raise Exception(
+            raise gl.vm.UserError(
                 f"Project '{project_clean}' is already verified in the Botanexa registry. "
                 "Verify a new project to earn a reward."
             )
 
-        # Check if contract has enough native funds to back the potential 2x reward (stake + reward)
-        try:
-            current_balance = gl.get_self_balance()
-        except AttributeError:
-            # Polyfill for local gltest direct_vm which lacks get_self_balance
-            current_balance = 9999999999999999999999
-
-        current_total = int(self.total_pending_rewards)
-        if current_balance < current_total + (int(stake) + ONE_GEN):
-            raise Exception("Contract does not have enough treasury funds to back this reward. Please contact the team to fund the treasury.")
+        # Check if contract has enough native funds to back the reward obligation
+        if self.balance < self.total_pending_rewards + stake + ONE_GEN:
+            raise gl.vm.UserError("Contract does not have enough treasury funds to back this reward bonus.")
 
         # ── AI Validation Prompt Block ──
-        def build_prompt() -> str:
-            # Fetch the project webpage / audit document inside the non-deterministic block
-            web_data = gl.nondet.web.render(evidence_url, mode='text')
+        def get_web_and_prompt() -> str:
+            # Fetch webpage inside non-deterministic block
+            response = gl.nondet.web.get(evidence_url)
+            web_data = response.body.decode("utf-8", errors="ignore")
             
             return f"""You are a STRICT ecological fact-checker for the BOTANEXA reforestation and carbon offset audit registry.
 Your job is to REJECT incorrect, inflated, or greenwashed claims. Be extremely critical of corporate ecological reports.
@@ -114,7 +107,7 @@ CARBON OFFSET ESTIMATE RULES:
 - A mature native tree typically sequesters approximately 22kg (0.022 metric tons) of CO2 per year.
 - Calculate: tree_count * 0.022 = carbon_offset_tons. 
 - Adjust this value down if the source reports that the trees are saplings, newly planted, or if they are slow-growing species.
-- Provide the final calculated carbon_offset_tons as a float value in the JSON response.
+- Provide the final calculated carbon_offset_tons as a string formatted number (e.g. "110.0") in the JSON response.
 
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
@@ -124,7 +117,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
     "location_coords": "{location_coords}",
     "species_planted": ["Tree species list matching source"],
     "tree_count": 0,
-    "carbon_offset_tons": 0.0,
+    "carbon_offset_tons": "0.0",
     "ecological_suitability": "Unsuitable - Invasive / Contradicted Species",
     "ecological_role": "None - rejected",
     "key_facts": [],
@@ -139,22 +132,25 @@ If the project is fully accurate, return:
     "location_coords": "{location_coords}",
     "species_planted": ["Scientific/common names of species"],
     "tree_count": {tree_count},
-    "carbon_offset_tons": 0.0,
+    "carbon_offset_tons": "0.0",
     "ecological_suitability": "Highly Suitable - Native Species",
     "ecological_role": "Provides soil stabilization, enhances local biodiversity, and restores natural water retention in the local watershed.",
     "key_facts": ["Fact 1 from report", "Fact 2 from report"],
     "companion_species": ["Species 1", "Species 2"]
 }}"""
 
+        task = "Verify the reforestation and carbon offset claims using the provided evidence URL."
+        criteria = (
+            "The leader's response must be a valid JSON object containing 'is_accurate' and 'reasoning'. "
+            "CRITICAL: The 'is_accurate' field MUST be false if the tree counts are inflated, the species are invasive, "
+            "or the coordinates do not match the report. 'is_accurate' can only be true if the project details "
+            "align perfectly with the facts in the evidence URL. Reject greenwashed or unsupported claims."
+        )
+
         result_str = gl.eq_principle.prompt_non_comparative(
-            build_prompt,
-            task="Verify the reforestation and carbon offset claims using the provided evidence URL.",
-            criteria=(
-                "The leader's response must be a valid JSON object containing 'is_accurate' and 'reasoning'. "
-                "CRITICAL: The 'is_accurate' field MUST be false if the tree counts are inflated, the species are invasive, "
-                "or the coordinates do not match the report. 'is_accurate' can only be true if the project details "
-                "align perfectly with the facts in the evidence URL. Reject greenwashed or unsupported claims."
-            ),
+            get_web_and_prompt,
+            task=task,
+            criteria=criteria,
         )
 
         # ── Parse AI output ──
@@ -177,7 +173,7 @@ If the project is fully accurate, return:
             "location_coords":        data.get("location_coords",        location_coords),
             "species_planted":        data.get("species_planted",        [species_planted] if isinstance(species_planted, str) else species_planted),
             "tree_count":             int(data.get("tree_count",         tree_count)),
-            "carbon_offset_tons":     float(data.get("carbon_offset_tons", 0.0)),
+            "carbon_offset_tons":     str(data.get("carbon_offset_tons", "0.0")),
             "ecological_suitability": data.get("ecological_suitability", "Unverified"),
             "ecological_role":        data.get("ecological_role",        ""),
             "reasoning":              data.get("reasoning",              ""),
@@ -188,20 +184,18 @@ If the project is fully accurate, return:
         }
 
         caller_str = self._addr(caller)
-        stake_int  = int(stake)
 
         if is_accurate:
             # ── ACCEPTED: Reward bonus is strictly capped at 1 GEN (stake returned + 1 GEN reward = 2 GEN) ──
             reward_bonus = ONE_GEN
-            reward_wei = stake_int + reward_bonus
+            reward_wei = stake + reward_bonus
             
             # Track the reward for the user to pull later
-            current = int(self.pending_rewards.get(caller_str, "0"))
-            self.pending_rewards[caller_str] = str(current + reward_wei)
+            current = u256(int(self.pending_rewards.get(caller_str, "0")))
+            self.pending_rewards[caller_str] = str(int(current + reward_wei))
             
             # Update total pending rewards
-            current_total = int(self.total_pending_rewards)
-            self.total_pending_rewards = str(current_total + reward_wei)
+            self.total_pending_rewards = self.total_pending_rewards + reward_wei
 
             # Cache the successful result
             self.verified_projects[project_lower] = json.dumps({
@@ -226,12 +220,12 @@ If the project is fully accurate, return:
                          safe_exp.get("reasoning", ""), True)
         else:
             # ── REJECTED: Burn the stake to the null address ──
-            _Recipient(Address("0x0000000000000000000000000000000000000000")).emit_transfer(value=u256(stake_int), on='finalized')
+            _Recipient(Address("0x0000000000000000000000000000000000000000")).emit_transfer(value=stake)
             
             self._record(caller_str, project_lower, project_clean,
                          data.get("reasoning", "Audit evidence did not support coordinates, tree counts, or species safety."), False)
 
-        self.total_queries += 1
+        self.total_queries = self.total_queries + u256(1)
 
     # ── View: pending reward balance ─────────────────────────────
 
@@ -249,25 +243,24 @@ If the project is fully accurate, return:
         caller_str = self._addr(caller)
         
         pending_str = self.pending_rewards.get(caller_str, "0")
-        pending_amount = int(pending_str)
+        pending_amount = u256(int(pending_str))
         
-        if pending_amount == 0:
-            raise Exception("No rewards available to withdraw.")
+        if pending_amount == u256(0):
+            raise gl.vm.UserError("No rewards available to withdraw.")
             
         # Zero the balance first (Checks-Effects-Interactions pattern)
         self.pending_rewards[caller_str] = "0"
         
         # Deduct from total pending rewards
-        current_total = int(self.total_pending_rewards)
-        self.total_pending_rewards = str(current_total - pending_amount)
+        self.total_pending_rewards = self.total_pending_rewards - pending_amount
         
-        # Emit the native transfer
-        _Recipient(caller).emit_transfer(value=u256(pending_amount), on='finalized')
+        # Emit the native transfer to the EOA
+        _Recipient(caller).emit_transfer(value=pending_amount)
 
     # ── Internal ──────────────────────────────────────────────────
 
     def _record(self, caller_str: str, project_lower: str, project_display: str,
-                reasoning: str, accepted: bool):
+                reasoning: str, accepted: bool) -> None:
         try:
             hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
             if not isinstance(hist, list): hist = []
