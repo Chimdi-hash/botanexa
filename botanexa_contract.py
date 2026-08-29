@@ -3,13 +3,6 @@
 from genlayer import *
 import json
 
-@gl.evm.contract_interface
-class _Recipient:
-    class View:
-        pass
-    class Write:
-        pass
-
 class BotanexaRegistry(gl.Contract):
     """
     BOTANEXA: Decentralized AI-powered reforestation and carbon offset audit registry.
@@ -313,3 +306,10 @@ If the project is fully accurate, return:
     @gl.public.view
     def get_recent_projects(self) -> str:
         return self.recent_projects_list
+
+@gl.evm.contract_interface
+class _Recipient:
+    class View:
+        pass
+    class Write:
+        pass
