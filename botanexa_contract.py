@@ -21,7 +21,7 @@ class BotanexaRegistry(gl.Contract):
     total_queries:        u256
     recent_projects_list: str                 # JSON list of recently verified project names
 
-    def __init__(self, dummy: str = ""):
+    def __init__(self):
         self.query_history = TreeMap()
         self.verified_projects = TreeMap()
         self.pending_rewards = TreeMap()
@@ -37,7 +37,7 @@ class BotanexaRegistry(gl.Contract):
         pass
 
     @gl.public.write.payable
-    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: u32, evidence_url: str) -> None:
+    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: int, evidence_url: str) -> None:
         caller    = gl.message.sender_address
         stake     = gl.message.value
         ONE_GEN   = u256(1000000000000000000)      # 1e18 wei
