@@ -21,20 +21,13 @@ class BotanexaRegistry(gl.Contract):
     total_queries:        u256
     recent_projects_list: str                 # JSON list of recently verified project names
 
-    def __init__(self):
+    def __init__(self, dummy: str = ""):
         self.query_history = TreeMap()
         self.verified_projects = TreeMap()
         self.pending_rewards = TreeMap()
         self.total_pending_rewards = 0
         self.total_queries = 0
         self.recent_projects_list = "[]"
-
-    # ── Helpers ───────────────────────────────────────────────────
-
-    @staticmethod
-    def _addr(a) -> str:
-        """Return a normalized (lower-case) string for any address-like value."""
-        return str(a).lower()
 
     # ── Core Staking + AI Validation ─────────────────────────────
 
@@ -44,7 +37,7 @@ class BotanexaRegistry(gl.Contract):
         pass
 
     @gl.public.write.payable
-    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: int, evidence_url: str) -> None:
+    def propose_offset(self, project_name: str, location_coords: str, species_planted: str, tree_count: u32, evidence_url: str) -> None:
         caller    = gl.message.sender_address
         stake     = gl.message.value
         ONE_GEN   = u256(1000000000000000000)      # 1e18 wei
@@ -145,7 +138,7 @@ If the project is fully accurate, return:
         )
 
         result_str = gl.eq_principle.prompt_non_comparative(
-            get_web_and_prompt,
+            input=get_web_and_prompt,
             task=task,
             criteria=criteria,
         )
@@ -180,7 +173,7 @@ If the project is fully accurate, return:
             "colors":                 { "primary": "#00dc64", "secondary": "#b8ffd1", "glow": "#00ff73" }
         }
 
-        caller_str = self._addr(caller)
+        caller_str = str(caller).lower()
 
         if is_accurate:
             # ── ACCEPTED: Reward bonus is strictly capped at 1 GEN (stake returned + 1 GEN reward = 2 GEN) ──
@@ -213,14 +206,30 @@ If the project is fully accurate, return:
                     pop = pop[-50:]
                 self.recent_projects_list = json.dumps(pop)
 
-            self._record(caller_str, project_lower, project_clean,
-                         safe_exp.get("reasoning", ""), True)
+            # Inline record history (ACCEPTED)
+            try:
+                hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
+                if not isinstance(hist, list): hist = []
+            except Exception:
+                hist = []
+            hist.append({"project": project_clean, "project_lower": project_lower,
+                         "reasoning": safe_exp.get("reasoning", ""), "accepted": True})
+            if len(hist) > 50: hist = hist[-50:]
+            self.query_history[caller_str] = json.dumps(hist)
         else:
             # ── REJECTED: Burn the stake to the null address ──
             _Recipient(Address("0x0000000000000000000000000000000000000000")).emit_transfer(value=stake)
             
-            self._record(caller_str, project_lower, project_clean,
-                         data.get("reasoning", "Audit evidence did not support coordinates, tree counts, or species safety."), False)
+            # Inline record history (REJECTED)
+            try:
+                hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
+                if not isinstance(hist, list): hist = []
+            except Exception:
+                hist = []
+            hist.append({"project": project_clean, "project_lower": project_lower,
+                         "reasoning": data.get("reasoning", "Audit evidence did not support coordinates, tree counts, or species safety."), "accepted": False})
+            if len(hist) > 50: hist = hist[-50:]
+            self.query_history[caller_str] = json.dumps(hist)
 
         self.total_queries = self.total_queries + u256(1)
 
@@ -237,7 +246,7 @@ If the project is fully accurate, return:
     def withdraw_rewards(self) -> None:
         """Withdraws accumulated rewards for the caller."""
         caller = gl.message.sender_address
-        caller_str = self._addr(caller)
+        caller_str = str(caller).lower()
         
         pending_str = self.pending_rewards.get(caller_str, "0")
         pending_amount = u256(int(pending_str))
@@ -252,23 +261,7 @@ If the project is fully accurate, return:
         self.total_pending_rewards = self.total_pending_rewards - pending_amount
         
         # Emit the native transfer to the EOA
-        _Recipient(caller).emit_transfer(value=pending_amount)
-
-    # ── Internal ──────────────────────────────────────────────────
-
-    def _record(self, caller_str: str, project_lower: str, project_display: str,
-                reasoning: str, accepted: bool) -> None:
-        try:
-            hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
-            if not isinstance(hist, list): hist = []
-        except Exception:
-            hist = []
-        hist.append({"project": project_display, "project_lower": project_lower,
-                     "reasoning": reasoning, "accepted": accepted})
-        if len(hist) > 50: hist = hist[-50:]
-        self.query_history[caller_str] = json.dumps(hist)
-
-    # ── Views ─────────────────────────────────────────────────────
+        _Recipient(Address(caller_str)).emit_transfer(value=pending_amount)
 
     @gl.public.view
     def get_cached_offset(self, project_name: str) -> str:
