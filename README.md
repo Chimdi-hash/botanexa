@@ -67,9 +67,9 @@ Add the **GenLayer Studio** network to MetaMask:
 1. Open the [GenLayer Studio](https://studio.genlayer.com).
 2. Create a new file named `botanexa_contract.py` and paste the contents of `botanexa_contract.py`.
 3. Select the contract and click **Deploy**.
-4. Copy the deployed contract address and paste it into the `CONTRACT_ADDRESS` constant at the top of `app.js`:
+4. Copy the deployed contract address and paste it into the `CONTRACT_ADDRESS` constant at the top of `app.js`. The currently deployed address is:
    ```javascript
-   const CONTRACT_ADDRESS = 'YOUR_DEPLOYED_CONTRACT_ADDRESS';
+   const CONTRACT_ADDRESS = '0x66D1Af5FeF41b6aF4D0CC088C43AD9bd9Ee5cAAc';
    ```
 
 ### 3. Run the Frontend Locally
