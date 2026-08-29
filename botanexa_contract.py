@@ -28,11 +28,6 @@ class BotanexaRegistry(gl.Contract):
     total_queries:        u256
     recent_projects_list: str                 # JSON list of recently verified project names
 
-    def __init__(self):
-        self.total_queries = 0
-        self.recent_projects_list = "[]"
-        self.total_pending_rewards = 0
-
     # ── Helpers ───────────────────────────────────────────────────
 
     @staticmethod
