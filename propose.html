@@ -613,8 +613,8 @@
     if (!window.getNativeBalance || !window.botanexaWallet?.address) return;
     const addr = window.botanexaWallet.address;
 
-    // Header updates
-    updateWalletUI();
+    // Header updates are already handled by origUI() in the overridden updateWalletUI()
+    // DO NOT call updateWalletUI() here to prevent infinite loop.
 
     // Reward Panel updates
     try {
