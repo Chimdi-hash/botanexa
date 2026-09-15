@@ -137,7 +137,7 @@ If the project is fully accurate, return:
         )
 
         result_str = gl.eq_principle.prompt_non_comparative(
-            input=get_web_and_prompt,
+            get_web_and_prompt,
             task=task,
             criteria=criteria,
         )
