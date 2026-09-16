@@ -236,6 +236,12 @@ If the project is fully accurate, return:
 
     # ── View: pending reward balance ─────────────────────────────
 
+    def _get_addr_str(self, addr_obj) -> str:
+        s = str(addr_obj).lower()
+        if "0x" in s:
+            s = "0x" + s.split("0x")[1].split(">")[0].strip()
+        return s
+
     @gl.public.view
     def get_pending_reward(self, user_address: str) -> str:
         key = user_address.strip().lower()
@@ -247,7 +253,7 @@ If the project is fully accurate, return:
     def withdraw_rewards(self) -> None:
         """Withdraws accumulated rewards for the caller."""
         caller = gl.message.sender_address
-        caller_str = str(caller).lower()
+        caller_str = self._get_addr_str(caller)
         
         pending_str = self.pending_rewards.get(caller_str, "0")
         pending_amount = u256(int(pending_str))
