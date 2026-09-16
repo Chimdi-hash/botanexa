@@ -69,7 +69,7 @@ Add the **GenLayer Studio** network to MetaMask:
 3. Select the contract and click **Deploy**.
 4. Copy the deployed contract address and paste it into the `CONTRACT_ADDRESS` constant at the top of `app.js`. The currently deployed address is:
    ```javascript
-   const CONTRACT_ADDRESS = '0x732094eE1913A611e5c926B4Ec38e3d95AA9Ff8F';
+   const CONTRACT_ADDRESS = '0xBc98FA41D210E66d2faaE278Ea2749bB827b92eE';
    ```
 
 ### 3. Run the Frontend Locally
