@@ -61,12 +61,12 @@ class BotanexaRegistry(gl.Contract):
             raise gl.vm.UserError("Contract does not have enough treasury funds to back this reward bonus.")
 
         # ── AI Validation Prompt Block ──
-        def get_web_and_prompt() -> str:
+        def evaluate_accuracy() -> dict:
             # Fetch webpage inside non-deterministic block
             response = gl.nondet.web.get(evidence_url)
             web_data = response.body.decode("utf-8", errors="ignore")
             
-            return f"""You are a STRICT ecological fact-checker for the BOTANEXA reforestation and carbon offset audit registry.
+            prompt_str = f"""You are a STRICT ecological fact-checker verifying a carbon offset project.
 Your job is to REJECT incorrect, inflated, or greenwashed claims. Be extremely critical of corporate ecological reports.
 
 Project Name claimed: "{project_clean}"
@@ -87,94 +87,44 @@ STEP 4 — Apply the REJECTION RULES below.
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
-- The planted species include highly invasive species for that region (e.g. planting Kudzu, Water Hyacinth, Japanese Knotweed, or species banned by regional forestry guidelines).
+- The planted species include highly invasive species for that region.
 - The evidence webpage indicates the project has been cancelled, abandoned, or exposed as fraudulent.
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
-- The evidence URL is not functional or does not contain relevant environmental/botanical reporting.
 
-CARBON OFFSET ESTIMATE RULES:
-- A mature native tree typically sequesters approximately 22kg (0.022 metric tons) of CO2 per year.
-- Calculate: tree_count * 0.022 = carbon_offset_tons. 
-- Adjust this value down if the source reports that the trees are saplings, newly planted, or if they are slow-growing species.
-- Provide the final calculated carbon_offset_tons as a string formatted number (e.g. "110.0") in the JSON response.
+If none of the rejection rules apply and the webpage confirms the project's existence and scale, set is_accurate=true.
 
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
-    "is_accurate": false,
-    "reasoning": "The evidence URL states that the project only planted [quote exact tree count or species from source]. The proposed submission claims {tree_count} trees which contradicts the source by [explain discrepancy]. Therefore, this claim is rejected as inaccurate.",
-    "project_name": "{project_clean}",
-    "location_coords": "{location_coords}",
-    "species_planted": ["Tree species list matching source"],
-    "tree_count": 0,
-    "carbon_offset_tons": "0.0",
-    "ecological_suitability": "Unsuitable - Invasive / Contradicted Species",
-    "ecological_role": "None - rejected",
-    "key_facts": [],
-    "companion_species": []
+  "is_accurate": true or false
 }}
+"""
+            result_str = gl.nondet.exec_prompt(prompt_str)
+            try:
+                c = result_str.strip().replace("```json", "").replace("```", "")
+                data = json.loads(c)
+                return {"is_accurate": bool(data.get("is_accurate"))}
+            except Exception:
+                return {"is_accurate": False}
 
-If the project is fully accurate, return:
-{{
-    "is_accurate": true,
-    "reasoning": "The evidence URL confirms that the project '{project_clean}' planted {tree_count} trees of species [name species] at the specified location. Coordinates match local records.",
-    "project_name": "{project_clean}",
-    "location_coords": "{location_coords}",
-    "species_planted": ["Scientific/common names of species"],
-    "tree_count": {tree_count},
-    "carbon_offset_tons": "0.0",
-    "ecological_suitability": "Highly Suitable - Native Species",
-    "ecological_role": "Provides soil stabilization, enhances local biodiversity, and restores natural water retention in the local watershed.",
-    "key_facts": ["Fact 1 from report", "Fact 2 from report"],
-    "companion_species": ["Species 1", "Species 2"]
-}}"""
-
-        task = "Verify the reforestation and carbon offset claims using the provided evidence URL."
-        criteria = (
-            "The leader's response MUST be a JSON object containing 'is_accurate' (boolean) and 'reasoning' (string). "
-            "EVALUATION RULE: You must AGREE (vote YES) with the leader if their 'reasoning' logically justifies their 'is_accurate' "
-            "verdict based on the provided evidence URL text. Do NOT be overly strict about exact tree count numbers "
-            "if the leader's reasoning explains that the claimed count is a safe subset or reasonable estimate of the source. "
-            "If your version of the evidence URL text appears to be an error page or 403 Forbidden, you MUST vote NO, as you cannot verify the data. "
-            "Otherwise, DISAGREE (vote NO) if the JSON is malformed or if the leader approved an obviously malicious claim that contradicts the successful text."
-        )
-
-        result_str = gl.eq_principle.prompt_non_comparative(
-            get_web_and_prompt,
-            task=task,
-            criteria=criteria,
-        )
-
-        # ── Parse AI output ──
-        try:
-            cleaned = result_str.strip()
-            if "```" in cleaned:
-                s = cleaned.find("{"); e = cleaned.rfind("}") + 1
-                if s >= 0 and e > s:
-                    cleaned = cleaned[s:e]
-            data = json.loads(cleaned)
-            if not isinstance(data, dict):
-                data = {}
-        except Exception:
-            data = {}
-
-        is_accurate = bool(data.get("is_accurate", False))
+        result_dict = gl.eq_principle.strict_eq(evaluate_accuracy)
+        is_accurate = result_dict["is_accurate"]
 
         safe_exp = {
-            "project_name":           data.get("project_name",           project_clean),
-            "location_coords":        data.get("location_coords",        location_coords),
-            "species_planted":        data.get("species_planted",        [species_planted] if isinstance(species_planted, str) else species_planted),
-            "tree_count":             int(data.get("tree_count",         tree_count)),
-            "carbon_offset_tons":     str(data.get("carbon_offset_tons", "0.0")),
-            "ecological_suitability": data.get("ecological_suitability", "Unverified"),
-            "ecological_role":        data.get("ecological_role",        ""),
-            "reasoning":              data.get("reasoning",              ""),
-            "key_facts":              data.get("key_facts",              []) if isinstance(data.get("key_facts"),    list) else [],
-            "companion_species":      data.get("companion_species",      []) if isinstance(data.get("companion_species"), list) else [],
+            "project_name":           project_clean,
+            "location_coords":        location_coords,
+            "species_planted":        [species_planted] if isinstance(species_planted, str) else species_planted,
+            "tree_count":             int(tree_count),
+            "carbon_offset_tons":     "0.0",
+            "ecological_suitability": "Unverified",
+            "ecological_role":        "",
+            "reasoning":              "Verified through strict equivalence consensus.",
+            "key_facts":              [],
+            "companion_species":      [],
             "visualization_type":     "forest_density",
             "colors":                 { "primary": "#00dc64", "secondary": "#b8ffd1", "glow": "#00ff73" }
         }
 
-        caller_str = str(caller).lower()
+        caller_str = self._get_addr_str(caller)
 
         if is_accurate:
             # ── ACCEPTED: Reward bonus is strictly capped at 1 GEN (stake returned + 1 GEN reward = 2 GEN) ──
