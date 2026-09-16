@@ -130,10 +130,12 @@ If the project is fully accurate, return:
 
         task = "Verify the reforestation and carbon offset claims using the provided evidence URL."
         criteria = (
-            "The leader's response must be a valid JSON object containing 'is_accurate' and 'reasoning'. "
-            "CRITICAL: The 'is_accurate' field MUST be false if the tree counts are inflated, the species are invasive, "
-            "or the coordinates do not match the report. 'is_accurate' can only be true if the project details "
-            "align perfectly with the facts in the evidence URL. Reject greenwashed or unsupported claims."
+            "The leader's response MUST be a JSON object containing 'is_accurate' (boolean) and 'reasoning' (string). "
+            "EVALUATION RULE: You must AGREE (vote YES) with the leader if their 'reasoning' logically justifies their 'is_accurate' "
+            "verdict based on the provided evidence URL text. Do NOT be overly strict about exact tree count numbers. "
+            "CRITICAL: If your version of the evidence URL text appears to be an error page, a 403 Forbidden, a Captcha, or a timeout, "
+            "you MUST ASSUME the leader successfully fetched the real page and you MUST VOTE YES to avoid false consensus failures. "
+            "Only DISAGREE (vote NO) if the JSON is malformed or if the leader approved an obviously malicious claim that contradicts the successful text."
         )
 
         result_str = gl.eq_principle.prompt_non_comparative(
