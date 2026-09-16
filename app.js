@@ -190,8 +190,23 @@ function handleChainChanged(chainId) {
 
 // ── Restore Previous Session ──
 async function restoreWalletSession() {
-  if (typeof window.ethereum === 'undefined') return;
   if (localStorage.getItem('botanexa_connected') !== 'true') return;
+
+  // Optimistic UI restore from localStorage
+  const cachedAddress = localStorage.getItem('botanexa_wallet');
+  if (cachedAddress) {
+    window.botanexaWallet.address = cachedAddress;
+    window.botanexaWallet.isConnected = true;
+    updateWalletUI();
+  }
+
+  // Wait up to 1.5 seconds for MetaMask to inject window.ethereum
+  for (let i = 0; i < 15; i++) {
+    if (typeof window.ethereum !== 'undefined') break;
+    await sleep(100);
+  }
+
+  if (typeof window.ethereum === 'undefined') return;
 
   try {
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -199,8 +214,15 @@ async function restoreWalletSession() {
       window.botanexaWallet.address = accounts[0];
       window.botanexaWallet.isConnected = true;
       updateWalletUI();
+      
+      // Prevent duplicate listeners
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+      window.ethereum.removeListener('chainChanged', handleChainChanged);
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
+    } else {
+      // If no accounts returned but we had cache, MetaMask might be locked. 
+      // We don't forcefully disconnect to preserve optimistic UI, but we can't transact.
     }
   } catch (err) {
     console.warn('Session restoration failed:', err);
