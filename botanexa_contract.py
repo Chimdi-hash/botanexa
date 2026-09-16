@@ -132,10 +132,10 @@ If the project is fully accurate, return:
         criteria = (
             "The leader's response MUST be a JSON object containing 'is_accurate' (boolean) and 'reasoning' (string). "
             "EVALUATION RULE: You must AGREE (vote YES) with the leader if their 'reasoning' logically justifies their 'is_accurate' "
-            "verdict based on the provided evidence URL text. Do NOT be overly strict about exact tree count numbers. "
-            "CRITICAL: If your version of the evidence URL text appears to be an error page, a 403 Forbidden, a Captcha, or a timeout, "
-            "you MUST ASSUME the leader successfully fetched the real page and you MUST VOTE YES to avoid false consensus failures. "
-            "Only DISAGREE (vote NO) if the JSON is malformed or if the leader approved an obviously malicious claim that contradicts the successful text."
+            "verdict based on the provided evidence URL text. Do NOT be overly strict about exact tree count numbers "
+            "if the leader's reasoning explains that the claimed count is a safe subset or reasonable estimate of the source. "
+            "If your version of the evidence URL text appears to be an error page or 403 Forbidden, you MUST vote NO, as you cannot verify the data. "
+            "Otherwise, DISAGREE (vote NO) if the JSON is malformed or if the leader approved an obviously malicious claim that contradicts the successful text."
         )
 
         result_str = gl.eq_principle.prompt_non_comparative(
