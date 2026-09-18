@@ -94,7 +94,7 @@ If none of the rejection rules apply, set is_accurate=true.
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
   "is_accurate": true or false,
-  "reasoning": "Explain step-by-step why you accepted or rejected this."
+  "reasoning": "Explain step-by-step why you accepted or rejected this, quoting text from the evidence URL."
 }}
 """
             result_str = gl.nondet.exec_prompt(prompt_str)
@@ -117,7 +117,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             # Validator only cares that the is_accurate boolean matches the leader's boolean exactly.
             return my_res["is_accurate"] == leaders_res.calldata["is_accurate"]
 
-        result_dict = gl.vm.run_nondet_default(leader_fn, validator_fn)
+        result_dict = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
         is_accurate = result_dict["is_accurate"]
 
         safe_exp = {
