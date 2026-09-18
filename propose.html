@@ -589,21 +589,49 @@
   }
 
   function showVerificationSuccess(data, txHash) {
-    showTrackerView(false);
-    showToast(`✅ Forest Verified! Reward +2 GEN credited to your address.`, 'success', 12000);
+    // Stop the loading tracker UI
+    document.querySelector('.tracker-loader').style.display = 'none';
     
-    // Custom sweet alert style modal or page reload redirect
-    setTimeout(() => {
-      window.location.href = `registry.html?search=${encodeURIComponent(data.project_name)}`;
-    }, 3000);
+    // Replace the tracker title and description with the success message and reasoning
+    document.getElementById('tracker-title').textContent = '✅ Forest Verified!';
+    document.getElementById('tracker-title').style.color = 'var(--glow-green)';
+    
+    const reasoningText = data.reasoning || "Verified through consensus.";
+    document.getElementById('tracker-desc').innerHTML = `
+      <div style="margin-top:1rem; padding:1rem; background:rgba(0,255,115,0.05); border:1px solid rgba(0,255,115,0.2); border-radius:8px; color:var(--text-bright);">
+        <strong>Reward:</strong> +2 GEN credited.<br><br>
+        <strong>AI Audit Reasoning:</strong><br>${reasoningText}
+      </div>
+      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:1.5rem; width:100%; border-color:var(--glow-green);">Submit Another Audit</button>
+    `;
+    
+    showToast(`✅ Forest Verified! Reward +2 GEN credited.`, 'success', 10000);
   }
 
   function showVerificationFailure(reason, txHash) {
-    showTrackerView(false);
-    showToast(`❌ SLASHED — 1 GEN Burned. Reason: ${reason}`, 'error', 15000);
+    // Stop the loading tracker UI
+    document.querySelector('.tracker-loader').style.display = 'none';
+    
+    document.getElementById('tracker-title').textContent = '❌ Audit Rejected';
+    document.getElementById('tracker-title').style.color = '#ff4d4d';
+    
+    document.getElementById('tracker-desc').innerHTML = `
+      <div style="margin-top:1rem; padding:1rem; background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.2); border-radius:8px; color:var(--text-bright);">
+        <strong>Penalty:</strong> -1 GEN (Stake Burned).<br><br>
+        <strong>AI Rejection Reasoning:</strong><br>${reason}
+      </div>
+      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:1.5rem; width:100%;">Return to Form</button>
+    `;
+    
+    showToast(`❌ SLASHED — 1 GEN Burned.`, 'error', 10000);
   }
 
   function resetTrackerView() {
+    // Reset tracker UI to its default state for the next submission
+    document.getElementById('tracker-title').style.color = '';
+    document.getElementById('tracker-desc').innerHTML = '';
+    document.querySelector('.tracker-loader').style.display = 'block';
+    
     showTrackerView(false);
     document.getElementById('tracker-tx-hash-box').style.display = 'none';
   }

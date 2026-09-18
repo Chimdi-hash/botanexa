@@ -60,8 +60,7 @@ class BotanexaRegistry(gl.Contract):
         if self.balance < self.total_pending_rewards + stake + ONE_GEN:
             raise gl.vm.UserError("Contract does not have enough treasury funds to back this reward bonus.")
 
-        # ── AI Validation Prompt Block ──
-        def evaluate_accuracy() -> dict:
+        def leader_fn():
             # Fetch webpage inside non-deterministic block
             response = gl.nondet.web.get(evidence_url)
             web_data = response.body.decode("utf-8", errors="ignore")
@@ -80,9 +79,8 @@ Evidence URL: "{evidence_url}"
 --------------------------------
 
 STEP 1 — Read the evidence webpage content carefully.
-STEP 2 — Find references to "{project_clean}" or reforestation projects in that location.
-STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 4 — Apply the REJECTION RULES below.
+STEP 2 — Compare the proposed coordinates, tree count, and species against the source text.
+STEP 3 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
@@ -91,22 +89,35 @@ MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - The evidence webpage indicates the project has been cancelled, abandoned, or exposed as fraudulent.
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
 
-If none of the rejection rules apply and the webpage confirms the project's existence and scale, set is_accurate=true.
+If none of the rejection rules apply, set is_accurate=true.
 
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
-  "is_accurate": true or false
+  "is_accurate": true or false,
+  "reasoning": "Explain step-by-step why you accepted or rejected this."
 }}
 """
             result_str = gl.nondet.exec_prompt(prompt_str)
             try:
-                c = result_str.strip().replace("```json", "").replace("```", "")
+                c = result_str.strip()
+                s = c.find("{"); e = c.rfind("}") + 1
+                if s >= 0 and e > s: c = c[s:e]
                 data = json.loads(c)
-                return {"is_accurate": bool(data.get("is_accurate"))}
+                return {
+                    "is_accurate": bool(data.get("is_accurate")),
+                    "reasoning": str(data.get("reasoning", "No reasoning provided."))
+                }
             except Exception:
-                return {"is_accurate": False}
+                return {"is_accurate": False, "reasoning": "Failed to parse LLM JSON output."}
 
-        result_dict = gl.eq_principle.strict_eq(evaluate_accuracy)
+        def validator_fn(leaders_res: gl.vm.Result) -> bool:
+            if not isinstance(leaders_res, gl.vm.Return):
+                return False
+            my_res = leader_fn()
+            # Validator only cares that the is_accurate boolean matches the leader's boolean exactly.
+            return my_res["is_accurate"] == leaders_res.calldata["is_accurate"]
+
+        result_dict = gl.vm.run_nondet_default(leader_fn, validator_fn)
         is_accurate = result_dict["is_accurate"]
 
         safe_exp = {
@@ -117,7 +128,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             "carbon_offset_tons":     "0.0",
             "ecological_suitability": "Unverified",
             "ecological_role":        "",
-            "reasoning":              "Verified through strict equivalence consensus.",
+            "reasoning":              result_dict.get("reasoning", "No reasoning provided."),
             "key_facts":              [],
             "companion_species":      [],
             "visualization_type":     "forest_density",
@@ -178,7 +189,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             except Exception:
                 hist = []
             hist.append({"project": project_clean, "project_lower": project_lower,
-                         "reasoning": data.get("reasoning", "Audit evidence did not support coordinates, tree counts, or species safety."), "accepted": False})
+                         "reasoning": result_dict.get("reasoning", "Audit evidence did not support coordinates, tree counts, or species safety."), "accepted": False})
             if len(hist) > 50: hist = hist[-50:]
             self.query_history[caller_str] = json.dumps(hist)
 
