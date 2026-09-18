@@ -19,7 +19,7 @@ const GENLAYER_CONFIG = {
 
 // ── Deployed Contract Address on GenLayer Studio ──
 // This address will be updated by the developer after deploying botanexa_contract.py on GenLayer Studio.
-const CONTRACT_ADDRESS = '0x0F577b9D4230571350E3cDc935E4e35384215a92'; // Botanexa contract address
+const CONTRACT_ADDRESS = '0x66c788d7d421E113407B7bfcf221cEAE57cbf57a'; // Botanexa contract address
 
 // ── Wallet State ──
 window.botanexaWallet = {
