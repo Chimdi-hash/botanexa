@@ -101,6 +101,12 @@ class BotanexaRegistryTest(unittest.TestCase):
         # Reward is strictly capped: 1 GEN bonus reward (+ the stake returned)
         reward_bonus = self.ONE_GEN
         reward_wei = stake_int + reward_bonus
+        
+        safe_exp = {
+            "project_name": project_clean,
+            "reasoning": "Valid audit verified by mock consensus",
+            "image_url": "https://example.org/image.jpg"
+        }
 
         if mock_accuracy:
             # ACCEPTED:
@@ -112,14 +118,25 @@ class BotanexaRegistryTest(unittest.TestCase):
             self.verified_projects[project_lower] = json.dumps({
                 "proposer": caller_str,
                 "project_name": project_clean,
-                "validator_consensus": True
+                "validator_consensus": True,
+                "explanation": safe_exp
             })
+            
+            hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
+            hist.append({"project": project_clean, "project_lower": project_lower, "reasoning": safe_exp["reasoning"], "image_url": safe_exp["image_url"], "accepted": True})
+            self.query_history[caller_str] = json.dumps(hist)
+            
             self.total_queries += 1
             return "ACCEPTED"
         else:
             # REJECTED: Real Burn to Null Address 0x0000...
             burn_address = "0x0000000000000000000000000000000000000000"
             _Recipient(burn_address).emit_transfer(value=stake_int, on='finalized')
+            
+            hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
+            hist.append({"project": project_clean, "project_lower": project_lower, "reasoning": "Rejected", "accepted": False})
+            self.query_history[caller_str] = json.dumps(hist)
+            
             self.total_queries += 1
             return "REJECTED"
 
