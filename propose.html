@@ -590,7 +590,10 @@
 
   function showVerificationSuccess(data, txHash) {
     // Stop the loading tracker UI
-    document.querySelector('.tracker-loader').style.display = 'none';
+    const orb = document.getElementById('tracker-orb');
+    const nodes = document.querySelector('.nodes-row');
+    if (orb) orb.style.display = 'none';
+    if (nodes) nodes.style.display = 'none';
     
     // Replace the tracker title and description with the success message and reasoning
     document.getElementById('tracker-title').textContent = '✅ Forest Verified!';
@@ -610,7 +613,10 @@
 
   function showVerificationFailure(reason, txHash) {
     // Stop the loading tracker UI
-    document.querySelector('.tracker-loader').style.display = 'none';
+    const orb = document.getElementById('tracker-orb');
+    const nodes = document.querySelector('.nodes-row');
+    if (orb) orb.style.display = 'none';
+    if (nodes) nodes.style.display = 'none';
     
     document.getElementById('tracker-title').textContent = '❌ Audit Rejected';
     document.getElementById('tracker-title').style.color = '#ff4d4d';
@@ -630,7 +636,11 @@
     // Reset tracker UI to its default state for the next submission
     document.getElementById('tracker-title').style.color = '';
     document.getElementById('tracker-desc').innerHTML = '';
-    document.querySelector('.tracker-loader').style.display = 'block';
+    
+    const orb = document.getElementById('tracker-orb');
+    const nodes = document.querySelector('.nodes-row');
+    if (orb) orb.style.display = 'flex';
+    if (nodes) nodes.style.display = 'flex';
     
     showTrackerView(false);
     document.getElementById('tracker-tx-hash-box').style.display = 'none';
