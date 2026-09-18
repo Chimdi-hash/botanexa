@@ -518,6 +518,14 @@
     if (proj) selectProject(proj);
   }
 
+  function formatReasoning(text, color) {
+    let formatted = text.replace(/(Step \d+:)/g, `<br><span style="color:${color}; font-weight:bold;">$1</span> `);
+    if (formatted.startsWith('<br>')) formatted = formatted.substring(4);
+    return `<div style="font-family:var(--font-mono); font-size:0.75rem; line-height:1.6; padding: 1rem; background: rgba(0,0,0,0.4); border-left: 2px solid ${color}; border-radius: 4px; margin-top: 0.5rem; color: var(--light-gray);">
+      ${formatted}
+    </div>`;
+  }
+
   function selectProject(project) {
     selectedProject = project;
     renderSidebarList();
@@ -540,7 +548,9 @@
 
     document.getElementById('project-carbon-badge').textContent = `Sequestration: ${project.carbon_offset_tons.toFixed(1)} Metric Tons/Yr`;
     document.getElementById('project-role').textContent = project.ecological_role || 'No ecological report provided.';
-    document.getElementById('project-reasoning').textContent = `"${project.reasoning}"`;
+    
+    document.getElementById('project-reasoning').innerHTML = formatReasoning(project.reasoning, 'var(--glow-green)');
+    
     document.getElementById('project-gps').textContent = project.location_coords;
     document.getElementById('project-trees').textContent = project.tree_count.toLocaleString() + ' verified trees';
 

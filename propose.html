@@ -588,45 +588,67 @@
     return null;
   }
 
+  function formatReasoning(text, color) {
+    let formatted = text.replace(/(Step \d+:)/g, `<br><span style="color:${color}; font-weight:bold;">$1</span> `);
+    // Strip leading <br> if it exists
+    if (formatted.startsWith('<br>')) formatted = formatted.substring(4);
+    
+    return `<div style="font-family:var(--font-mono); font-size:0.75rem; line-height:1.6; text-align:left; max-height: 250px; overflow-y: auto; padding: 1rem; background: rgba(0,0,0,0.6); border-left: 2px solid ${color}; border-radius: 4px; margin-top: 0.5rem; color: var(--light-gray);">
+      ${formatted}
+    </div>`;
+  }
+
   function showVerificationSuccess(data, txHash) {
-    // Stop the loading tracker UI
     const orb = document.getElementById('tracker-orb');
     const nodes = document.querySelector('.nodes-row');
     if (orb) orb.style.display = 'none';
     if (nodes) nodes.style.display = 'none';
     
-    // Replace the tracker title and description with the success message and reasoning
-    document.getElementById('tracker-title').textContent = '✅ Forest Verified!';
+    document.getElementById('tracker-title').textContent = 'VERIFICATION SUCCESSFUL';
     document.getElementById('tracker-title').style.color = 'var(--glow-green)';
+    document.getElementById('tracker-title').style.fontFamily = 'var(--font-mono)';
     
-    const reasoningText = data.reasoning || "Verified through consensus.";
+    const reasoningText = formatReasoning(data.reasoning || "Verified through consensus.", 'var(--glow-green)');
+    
     document.getElementById('tracker-desc').innerHTML = `
-      <div style="margin-top:1rem; padding:1rem; background:rgba(0,255,115,0.05); border:1px solid rgba(0,255,115,0.2); border-radius:8px; color:var(--text-bright);">
-        <strong>Reward:</strong> +2 GEN credited.<br><br>
-        <strong>AI Audit Reasoning:</strong><br>${reasoningText}
+      <div style="margin-top:1.5rem; text-align:left;">
+        <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--glow-green); margin-bottom:1rem; text-transform:uppercase; letter-spacing:1px;">
+          [ REWARD DISPATCHED: +2 GEN ]
+        </div>
+        <div style="font-size:0.75rem; color:var(--emerald-core); text-transform:uppercase; margin-bottom:0.2rem; font-weight:bold;">
+          // AI Audit Transcript
+        </div>
+        ${reasoningText}
       </div>
-      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:1.5rem; width:100%; border-color:var(--glow-green);">Submit Another Audit</button>
+      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:2rem; width:100%; border-color:var(--glow-green);">INITIALIZE NEW AUDIT</button>
     `;
     
     showToast(`✅ Forest Verified! Reward +2 GEN credited.`, 'success', 10000);
   }
 
   function showVerificationFailure(reason, txHash) {
-    // Stop the loading tracker UI
     const orb = document.getElementById('tracker-orb');
     const nodes = document.querySelector('.nodes-row');
     if (orb) orb.style.display = 'none';
     if (nodes) nodes.style.display = 'none';
     
-    document.getElementById('tracker-title').textContent = '❌ Audit Rejected';
+    document.getElementById('tracker-title').textContent = 'AUDIT REJECTED';
     document.getElementById('tracker-title').style.color = '#ff4d4d';
+    document.getElementById('tracker-title').style.fontFamily = 'var(--font-mono)';
+    
+    const reasoningText = formatReasoning(reason, '#ff4d4d');
     
     document.getElementById('tracker-desc').innerHTML = `
-      <div style="margin-top:1rem; padding:1rem; background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.2); border-radius:8px; color:var(--text-bright);">
-        <strong>Penalty:</strong> -1 GEN (Stake Burned).<br><br>
-        <strong>AI Rejection Reasoning:</strong><br>${reason}
+      <div style="margin-top:1.5rem; text-align:left;">
+        <div style="font-family:var(--font-mono); font-size:0.7rem; color:#ff4d4d; margin-bottom:1rem; text-transform:uppercase; letter-spacing:1px;">
+          [ COLLATERAL SLASHED: -1 GEN BURNED ]
+        </div>
+        <div style="font-size:0.75rem; color:#ff4d4d; text-transform:uppercase; margin-bottom:0.2rem; font-weight:bold;">
+          // AI Audit Transcript
+        </div>
+        ${reasoningText}
       </div>
-      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:1.5rem; width:100%;">Return to Form</button>
+      <button onclick="resetTrackerView()" class="btn-wallet" style="margin-top:2rem; width:100%; border-color:#ff4d4d; color:#ff4d4d;">RETURN TO TERMINAL</button>
     `;
     
     showToast(`❌ SLASHED — 1 GEN Burned.`, 'error', 10000);
