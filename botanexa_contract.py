@@ -103,7 +103,8 @@ If none of the rejection rules apply, set is_accurate=true.
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
   "is_accurate": true or false,
-  "reasoning": "Explain step-by-step why you accepted or rejected this, quoting text from the evidence URL."
+  "reasoning": "Explain step-by-step why you accepted or rejected this, quoting text from the evidence URL.",
+  "image_url": "If accepted, extract a direct absolute image URL (starting with https://) from the evidence page representing the project or location. Otherwise leave empty string."
 }}
 """
             result_str = gl.nondet.exec_prompt(prompt_str)
@@ -114,7 +115,8 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 data = json.loads(c)
                 return {
                     "is_accurate": bool(data.get("is_accurate")),
-                    "reasoning": str(data.get("reasoning", "No reasoning provided."))
+                    "reasoning": str(data.get("reasoning", "No reasoning provided.")),
+                    "image_url": str(data.get("image_url", ""))
                 }
             except Exception:
                 return {"is_accurate": False, "reasoning": "Failed to parse LLM JSON output."}
@@ -138,6 +140,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             "ecological_suitability": "Unverified",
             "ecological_role":        "",
             "reasoning":              result_dict.get("reasoning", "No reasoning provided."),
+            "image_url":              result_dict.get("image_url", ""),
             "key_facts":              [],
             "companion_species":      [],
             "visualization_type":     "forest_density",
@@ -184,7 +187,9 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             except Exception:
                 hist = []
             hist.append({"project": project_clean, "project_lower": project_lower,
-                         "reasoning": safe_exp.get("reasoning", ""), "accepted": True})
+                         "reasoning": safe_exp.get("reasoning", ""), 
+                         "image_url": safe_exp.get("image_url", ""),
+                         "accepted": True})
             if len(hist) > 50: hist = hist[-50:]
             self.query_history[caller_str] = json.dumps(hist)
         else:
@@ -262,6 +267,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                         if e.get("accepted"):
                             return json.dumps({"status": "ACCEPTED",
                                                "reasoning": e.get("reasoning", ""),
+                                               "image_url": e.get("image_url", ""),
                                                "reward": 2})
                         return json.dumps({"status": "REJECTED",
                                            "reasoning": e.get("reasoning", ""),
