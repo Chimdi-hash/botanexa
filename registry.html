@@ -545,6 +545,7 @@
     
     if (project.image_url && project.image_url.startsWith('http')) {
         imgEl.src = project.image_url;
+        imgEl.onerror = function() { this.style.display = 'none'; };
         imgEl.style.display = 'block';
     } else {
         imgEl.style.display = 'none';
