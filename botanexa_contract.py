@@ -18,6 +18,9 @@ class BotanexaRegistry(gl.Contract):
     pending_rewards:      TreeMap[str, str]   # lower(address)      -> wei amount string
     total_pending_rewards: u256                # Tracks global outstanding reward obligations
     total_queries:        u256
+    total_trees_audited:  u256
+    total_staked_amount:  u256
+    total_co2_offset:     u256
     recent_projects_list: str                 # JSON list of recently verified project names
 
     def __init__(self):
@@ -25,7 +28,10 @@ class BotanexaRegistry(gl.Contract):
         self.verified_projects = TreeMap()
         self.pending_rewards = TreeMap()
         self.total_pending_rewards = 0
-        self.total_queries = 0
+        self.total_queries = u256(0)
+        self.total_trees_audited = u256(0)
+        self.total_staked_amount = u256(0)
+        self.total_co2_offset = u256(0)
         self.recent_projects_list = "[]"
 
     # ── Core Staking + AI Validation ─────────────────────────────
@@ -59,6 +65,9 @@ class BotanexaRegistry(gl.Contract):
         # Check if contract has enough native funds to back the reward obligation
         if self.balance < self.total_pending_rewards + stake + ONE_GEN:
             raise gl.vm.UserError("Contract does not have enough treasury funds to back this reward bonus.")
+
+        self.total_staked_amount = self.total_staked_amount + stake
+        self.total_trees_audited = self.total_trees_audited + u256(int(tree_count))
 
         def leader_fn():
             # Fetch webpage inside non-deterministic block
@@ -265,6 +274,9 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
     def get_stats(self) -> str:
         return json.dumps({
             "total_queries": int(self.total_queries),
+            "total_trees_audited": int(self.total_trees_audited),
+            "total_staked_amount": str(self.total_staked_amount),
+            "total_co2_offset": int(self.total_co2_offset),
             "platform": "BOTANEXA",
             "network": "GenLayer Studio"
         })

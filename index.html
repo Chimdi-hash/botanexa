@@ -409,27 +409,29 @@
         </div>
       `).join('');
 
-      // Aggregate statistics from all projects
+      // Aggregate statistics from global contract state
       let totalTrees = 0;
       let totalCO2 = 0;
       let activeCount = recentList.length;
-      let totalStaked = recentList.length * 1.0; // 1 GEN per project
+      let totalStakedStr = "0";
 
-      for (let name of recentList) {
-        try {
-          const cachedRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_cached_offset', [name]);
-          const projectData = typeof cachedRaw === 'string' ? JSON.parse(cachedRaw) : cachedRaw;
-          if (projectData && projectData.explanation) {
-            totalTrees += parseInt(projectData.explanation.tree_count || 0);
-            totalCO2 += parseFloat(projectData.explanation.carbon_offset_tons || 0.0);
-          }
-        } catch (e) {
-          console.warn("Failed to fetch project detailed stats:", e);
+      try {
+        const statsRaw = await window.readGenLayer(CONTRACT_ADDRESS, 'get_stats');
+        const stats = typeof statsRaw === 'string' ? JSON.parse(statsRaw) : statsRaw;
+        if (stats) {
+          totalTrees = parseInt(stats.total_trees_audited || 0);
+          activeCount = parseInt(stats.total_queries || recentList.length);
+          totalStakedStr = String(stats.total_staked_amount || "0");
+          totalCO2 = parseFloat(stats.total_co2_offset || 0);
         }
+      } catch (e) {
+        console.warn("Failed to fetch global stats:", e);
       }
+      
+      const stakedGen = (Number(totalStakedStr) / 1e18).toFixed(1);
 
       // Render metrics
-      animateStats(totalTrees, totalCO2, activeCount, totalStaked);
+      animateStats(totalTrees, totalCO2, activeCount, stakedGen);
 
     } catch (err) {
       console.error("Dashboard load error:", err);
