@@ -461,10 +461,10 @@
       await sleep(4000);
 
       // Final status check from contract history
-      setTrackerState('final', 'Verifying On-Chain Status', 'Checking final contract history entries...');
+      setTrackerState('final', 'Verifying On-Chain Status', 'Waiting for GenLayer AI validators to reach consensus (this usually takes 30-60 seconds)...');
       await sleep(2000);
 
-      const statusObj = await readProposalStatusWithRetry(pName, window.botanexaWallet.address, 6);
+      const statusObj = await readProposalStatusWithRetry(pName, window.botanexaWallet.address, 30);
 
       if (!statusObj || statusObj.status === 'PENDING') {
         // Fallback check cache directly
