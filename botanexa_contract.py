@@ -87,11 +87,13 @@ Evidence URL: "{evidence_url}"
 {web_data}
 --------------------------------
 
-STEP 1 — Read the evidence webpage content carefully.
-STEP 2 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 3 — Apply the REJECTION RULES below.
+STEP 1 — Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority (e.g., Wikipedia, official government registries, UN, Arbor Day, or reputable international news orgs).
+STEP 2 — Read the evidence webpage content carefully.
+STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
+STEP 4 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
+- SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required.
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
 - The planted species include highly invasive species for that region.
@@ -113,8 +115,13 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 s = c.find("{"); e = c.rfind("}") + 1
                 if s >= 0 and e > s: c = c[s:e]
                 data = json.loads(c)
+                
+                # Strict parsing to prevent malformed string 'false' from bypassing as True
+                is_acc_val = data.get("is_accurate")
+                is_acc_bool = True if is_acc_val is True or str(is_acc_val).strip().lower() == "true" else False
+                
                 return {
-                    "is_accurate": bool(data.get("is_accurate")),
+                    "is_accurate": is_acc_bool,
                     "reasoning": str(data.get("reasoning", "No reasoning provided.")),
                     "image_url": str(data.get("image_url", ""))
                 }
