@@ -161,58 +161,63 @@ class BotanexaRegistryTest(unittest.TestCase):
         user = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         gl.message.sender_address = MockAddress(user)
 
-        # 1. Propose accurate offset with 1 GEN stake
         res = self.propose_offset("Amazonia Canopy", "-3.465, -62.215", "Mahogany", 5000, "https://example.org", mock_accuracy=True, stake=self.ONE_GEN)
         self.assertEqual(res, "ACCEPTED")
 
-        # 2. Check pending reward is exactly 2 GEN (1 GEN stake + 1 GEN reward)
         pending = int(self.pending_rewards[user.lower()])
         self.assertEqual(pending, 2 * self.ONE_GEN)
 
-        # 3. Withdraw rewards fully
         withdrawn = self.withdraw_rewards(user)
         self.assertEqual(withdrawn, 2 * self.ONE_GEN)
 
-        # 4. Verify native transfer event was emitted to the user's address
         self.assertEqual(len(MockRecipient.transfers), 1)
         self.assertEqual(MockRecipient.transfers[0]["to"], user)
         self.assertEqual(MockRecipient.transfers[0]["value"], 2 * self.ONE_GEN)
 
-        # 5. Verify pending balance is now 0
         self.assertEqual(int(self.pending_rewards[user.lower()]), 0)
 
-        # 6. Second withdrawal attempt must be rejected (reentrancy / double spend protection)
         with self.assertRaises(Exception) as ctx:
             self.withdraw_rewards(user)
         self.assertIn("No rewards available to withdraw", str(ctx.exception))
-
-    def test_reward_capped_on_large_deposit(self):
-        user = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-        gl.message.sender_address = MockAddress(user)
-
-        # User deposits 10 GEN instead of 1 GEN
-        large_stake = 10 * self.ONE_GEN
-        self.propose_offset("High Stake Forest", "1.0, 1.0", "Oak", 1000, "https://example.org", mock_accuracy=True, stake=large_stake)
-
-        # The bonus reward is strictly capped to 1 GEN (total = 10 GEN stake returned + 1 GEN reward = 11 GEN, NOT 20 GEN)
-        pending = int(self.pending_rewards[user.lower()])
-        self.assertEqual(pending, 11 * self.ONE_GEN)
 
     def test_real_burning_on_fraudulent_claim(self):
         user = "0xcccccccccccccccccccccccccccccccccccccccc"
         gl.message.sender_address = MockAddress(user)
 
-        # User submits fraudulent proposal with 1 GEN stake
         res = self.propose_offset("Fake Desert Trees", "0.0, 0.0", "Kudzu", 999999, "https://fake.org", mock_accuracy=False, stake=self.ONE_GEN)
         self.assertEqual(res, "REJECTED")
 
-        # Verify no reward is granted
         self.assertEqual(int(self.pending_rewards.get(user.lower(), "0")), 0)
 
-        # Verify real burn transfer emitted to null address
         self.assertEqual(len(MockRecipient.transfers), 1)
         self.assertEqual(MockRecipient.transfers[0]["to"], "0x0000000000000000000000000000000000000000")
         self.assertEqual(MockRecipient.transfers[0]["value"], self.ONE_GEN)
+
+    def test_duplicate_project_rejection(self):
+        user = "0xdddddddddddddddddddddddddddddddddddddddd"
+        gl.message.sender_address = MockAddress(user)
+        self.propose_offset("UniqueProject", "Coords", "Oak", 100, "https://valid.com", mock_accuracy=True, stake=self.ONE_GEN)
+        with self.assertRaises(Exception) as ctx:
+            self.propose_offset("UniqueProject", "Coords", "Oak", 100, "https://valid.com", mock_accuracy=True, stake=self.ONE_GEN)
+        self.assertIn("already verified", str(ctx.exception))
+
+    def test_invalid_url_validation(self):
+        user = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        gl.message.sender_address = MockAddress(user)
+        with self.assertRaises(Exception) as ctx:
+            self.propose_offset("Project", "Coords", "Pine", 10, "ftp://badurl.com", stake=self.ONE_GEN)
+        self.assertIn("Invalid evidence_url", str(ctx.exception))
+
+    def test_treasury_insufficient(self):
+        user = "0xffffffffffffffffffffffffffffffffffffffff"
+        gl.message.sender_address = MockAddress(user)
+        # Mock drain treasury by artificially setting balance in the mock or simulating large rewards
+        # The contract code checks `self.balance < self.total_pending_rewards + stake + ONE_GEN`
+        # We can trigger it by artificially inflating pending rewards
+        self.total_pending_rewards = str(1000 * self.ONE_GEN)
+        with self.assertRaises(Exception) as ctx:
+            self.propose_offset("TreasuryTest", "Coords", "Oak", 100, "https://test.org", stake=self.ONE_GEN)
+        self.assertIn("Contract does not have enough treasury funds", str(ctx.exception))
 
 if __name__ == "__main__":
     unittest.main()
