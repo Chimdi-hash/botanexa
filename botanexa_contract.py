@@ -47,11 +47,23 @@ class BotanexaRegistry(gl.Contract):
         stake     = gl.message.value
         ONE_GEN   = u256(1000000000000000000)      # 1e18 wei
 
+        caller = gl.message.sender_address
+        stake = gl.message.value
+        ONE_GEN = u256(10**18)
+        
+        # Harden Input Validation
         if stake < ONE_GEN:
             raise gl.vm.UserError("Must stake at least 1 GEN to propose a project audit.")
+        if not evidence_url.startswith("http"):
+            raise gl.vm.UserError("Invalid evidence_url. Must start with http or https.")
+        if int(tree_count) <= 0:
+            raise gl.vm.UserError("Tree count must be greater than 0.")
 
         project_clean = project_name.strip()
         project_lower = project_clean.lower()
+
+        if len(project_clean) > 100:
+            raise gl.vm.UserError("Project name too long.")
 
         if not project_lower:
             raise gl.vm.UserError("Project name cannot be empty.")
@@ -73,6 +85,9 @@ class BotanexaRegistry(gl.Contract):
             # Fetch webpage inside non-deterministic block
             response = gl.nondet.web.get(evidence_url)
             web_data = response.body.decode("utf-8", errors="ignore")
+            # Truncate oversized fetched pages to prevent context explosion, but allow enough for heavy HTML
+            if len(web_data) > 100000:
+                web_data = web_data[:100000]
             
             prompt_str = f"""You are a STRICT ecological fact-checker verifying a carbon offset project.
 Your job is to REJECT incorrect, inflated, or greenwashed claims. Be extremely critical of corporate ecological reports.
@@ -90,7 +105,8 @@ Evidence URL: "{evidence_url}"
 STEP 1 — Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority (e.g., Wikipedia, official government registries, UN, Arbor Day, or reputable international news orgs).
 STEP 2 — Read the evidence webpage content carefully.
 STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 4 — Apply the REJECTION RULES below.
+STEP 4 — Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per tree) and assess ecological suitability.
+STEP 5 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required.
@@ -100,13 +116,18 @@ MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - The evidence webpage indicates the project has been cancelled, abandoned, or exposed as fraudulent.
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
 
-If none of the rejection rules apply, set is_accurate=true.
-
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
 {{
   "is_accurate": true or false,
-  "reasoning": "Explain step-by-step why you accepted or rejected this, quoting text from the evidence URL.",
-  "image_url": "If accepted, extract a direct absolute image URL (starting with https://) from the evidence page representing the project or location. Otherwise leave empty string."
+  "source_provenance_valid": true or false,
+  "location_match": true or false,
+  "species_safe": true or false,
+  "tree_count_reasonable": true or false,
+  "carbon_sequestration_tons": 500.0,
+  "ecological_suitability": "Short assessment of species suitability for region",
+  "ecological_role": "Primary role, e.g. soil stabilization",
+  "reasoning": "Explain step-by-step why you accepted or rejected this.",
+  "image_url": "If accepted, extract a direct absolute image URL (starting with https://). Otherwise empty."
 }}
 """
             result_str = gl.nondet.exec_prompt(prompt_str)
@@ -122,18 +143,31 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 
                 return {
                     "is_accurate": is_acc_bool,
+                    "source_provenance_valid": bool(data.get("source_provenance_valid")),
+                    "location_match": bool(data.get("location_match")),
+                    "species_safe": bool(data.get("species_safe")),
+                    "tree_count_reasonable": bool(data.get("tree_count_reasonable")),
+                    "carbon_sequestration_tons": str(data.get("carbon_sequestration_tons", "0.0")),
+                    "ecological_suitability": str(data.get("ecological_suitability", "Unverified")),
+                    "ecological_role": str(data.get("ecological_role", "")),
                     "reasoning": str(data.get("reasoning", "No reasoning provided.")),
                     "image_url": str(data.get("image_url", ""))
                 }
             except Exception:
-                return {"is_accurate": False, "reasoning": "Failed to parse LLM JSON output."}
+                return {"is_accurate": False, "source_provenance_valid": False, "location_match": False, "species_safe": False, "tree_count_reasonable": False, "reasoning": "Failed to parse LLM JSON output.", "carbon_sequestration_tons": "0", "ecological_suitability": "Unverified", "ecological_role": "", "image_url": ""}
 
         def validator_fn(leaders_res: gl.vm.Result) -> bool:
             if not isinstance(leaders_res, gl.vm.Return):
                 return False
             my_res = leader_fn()
-            # Validator only cares that the is_accurate boolean matches the leader's boolean exactly.
-            return my_res["is_accurate"] == leaders_res.calldata["is_accurate"]
+            
+            # Validator verifies substantive outputs beyond just is_accurate
+            return (
+                my_res["is_accurate"] == leaders_res.calldata["is_accurate"] and
+                my_res["source_provenance_valid"] == leaders_res.calldata["source_provenance_valid"] and
+                my_res["location_match"] == leaders_res.calldata["location_match"] and
+                my_res["tree_count_reasonable"] == leaders_res.calldata["tree_count_reasonable"]
+            )
 
         result_dict = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
         is_accurate = result_dict["is_accurate"]
@@ -143,9 +177,9 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             "location_coords":        location_coords,
             "species_planted":        [species_planted] if isinstance(species_planted, str) else species_planted,
             "tree_count":             int(tree_count),
-            "carbon_offset_tons":     "0.0",
-            "ecological_suitability": "Unverified",
-            "ecological_role":        "",
+            "carbon_offset_tons":     result_dict.get("carbon_sequestration_tons", "0.0"),
+            "ecological_suitability": result_dict.get("ecological_suitability", "Unverified"),
+            "ecological_role":        result_dict.get("ecological_role", ""),
             "reasoning":              result_dict.get("reasoning", "No reasoning provided."),
             "image_url":              result_dict.get("image_url", ""),
             "key_facts":              [],
