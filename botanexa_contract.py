@@ -82,10 +82,31 @@ class BotanexaRegistry(gl.Contract):
         self.total_trees_audited = self.total_trees_audited + u256(int(tree_count))
 
         def leader_fn():
+            fetch_url = evidence_url
+            is_wiki = False
+            
+            # --- WIKIPEDIA CLOUDFLARE BYPASS ---
+            # If the user submits a Wikipedia HTML link, we convert it to a Wikipedia API link
+            # because Wikipedia Cloudflare blocks GenLayer nodes (429 Too Many Requests).
+            if "wikipedia.org/wiki/" in evidence_url:
+                page_title = evidence_url.split("wikipedia.org/wiki/")[-1].split("#")[0]
+                fetch_url = f"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles={page_title}&format=json&explaintext=1"
+                is_wiki = True
+
             # Fetch webpage inside non-deterministic block
-            response = gl.nondet.web.get(evidence_url)
+            response = gl.nondet.web.get(fetch_url)
             web_data = response.body.decode("utf-8", errors="ignore")
-            # Truncate oversized fetched pages to prevent context explosion, but allow enough for heavy HTML
+            
+            if is_wiki:
+                # Extract pure text from Wikipedia JSON to save context window
+                try:
+                    wiki_json = json.loads(web_data)
+                    pages = wiki_json.get("query", {}).get("pages", {})
+                    web_data = " ".join([p.get("extract", "") for p in pages.values()])
+                except Exception:
+                    pass
+
+            # Truncate oversized fetched pages to prevent context explosion
             if len(web_data) > 100000:
                 web_data = web_data[:100000]
             
