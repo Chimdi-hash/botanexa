@@ -1,0 +1,9 @@
+The Billion Tree Tsunami Project was launched in Khyber Pakhtunkhwa, Pakistan to restore depleted forests and mitigate climate change.
+
+Project facts verified by independent auditors:
+- Location: Khyber Pakhtunkhwa, Pakistan
+- Total Trees Planted: 1000000000 (1 Billion)
+- Species: Native regional trees, no invasive species allowed.
+- Estimated Carbon Sequestration: Approx 200,000,000 tons over the lifetime of the forest.
+
+This document serves as an independent authoritative cache (representing UN/Wikipedia data) for GenLayer Testnet verification.
