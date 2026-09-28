@@ -210,6 +210,12 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 "proposer":           caller_str,
             })
 
+            # Update global stats
+            try:
+                self.total_co2_offset = self.total_co2_offset + u256(int(float(safe_exp["carbon_offset_tons"])))
+            except Exception:
+                pass
+
             # Update the recent projects list
             try:
                 pop = json.loads(self.recent_projects_list)
