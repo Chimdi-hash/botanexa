@@ -82,34 +82,9 @@ class BotanexaRegistry(gl.Contract):
         self.total_trees_audited = self.total_trees_audited + u256(int(tree_count))
 
         def leader_fn():
-            fetch_url = evidence_url
-            is_wiki = False
-            
-            # --- WIKIPEDIA CLOUDFLARE BYPASS ---
-            # If the user submits a Wikipedia HTML link, we convert it to a Wikipedia API link
-            # because Wikipedia Cloudflare blocks GenLayer nodes (429 Too Many Requests).
-            if "wikipedia.org/wiki/" in evidence_url:
-                page_title = evidence_url.split("wikipedia.org/wiki/")[-1].split("#")[0]
-                fetch_url = f"https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles={page_title}&format=json&explaintext=1"
-                is_wiki = True
-
-            # Fetch webpage inside non-deterministic block
-            response = gl.nondet.web.get(fetch_url)
-            web_data = response.body.decode("utf-8", errors="ignore")
-            
-            if is_wiki:
-                # Extract pure text from Wikipedia JSON to save context window
-                try:
-                    wiki_json = json.loads(web_data)
-                    if "error" in wiki_json or "warnings" in wiki_json:
-                        raise ValueError("Wikipedia API Error")
-                    pages = wiki_json.get("query", {}).get("pages", {})
-                    web_data = " ".join([p.get("extract", "") for p in pages.values()])
-                except Exception:
-                    # If Wikipedia API blocked the GenLayer node (403 Forbidden / 429 Rate Limit),
-                    # seamlessly fallback to the verified testnet text cache to ensure the transaction succeeds.
-                    fallback_resp = gl.nondet.web.get("https://botanexa.vercel.app/billion_tree_evidence.txt")
-                    web_data = fallback_resp.body.decode("utf-8", errors="ignore")
+            # Fetch and render the actual web content inside the non-deterministic block.
+            # mode='text' executes JS and bypasses Cloudflare security challenges natively.
+            web_data = gl.nondet.web.render(evidence_url, mode="text")
 
             # Truncate oversized fetched pages to prevent context explosion
             if len(web_data) > 100000:
@@ -135,7 +110,7 @@ STEP 4 — Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per 
 STEP 5 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
-- SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required. *(EXCEPTION: For GenLayer Testnet purposes, URLs from 'gist.githubusercontent.com', 'pastebin.com', or any '.txt' cache are explicitly AUTHORIZED as valid independent sources to bypass Cloudflare bot restrictions on Wikipedia/UN).*
+- SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required.
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
 - The planted species include highly invasive species for that region.
