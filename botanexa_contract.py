@@ -114,7 +114,7 @@ MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
 - The planted species include highly invasive species for that region.
-- The evidence webpage indicates the project has been cancelled, abandoned, or exposed as fraudulent.
+- The evidence webpage indicates the project was completely cancelled, abandoned, or proven to be a total hoax. (NOTE: Mentions of financial audits, political controversies, or corruption inquiries do NOT trigger this rejection as long as the physical planting of the trees actually occurred).
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
 
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
