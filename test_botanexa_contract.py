@@ -1,223 +1,167 @@
-import json
 import unittest
+import json
+import sys
 
-# Mock GenLayer environment for contract testing
-class MockAddress:
-    def __init__(self, addr_str="0x1111111111111111111111111111111111111111"):
-        self.addr = addr_str
-    def __str__(self):
-        return self.addr
-    def as_hex(self):
-        return self.addr
-
-class MockRecipient:
-    transfers = []
-    def __init__(self, target_address):
-        self.target = str(target_address)
-    def emit_transfer(self, value, on='finalized'):
-        MockRecipient.transfers.append({
-            "to": self.target,
-            "value": int(value),
-            "on": on
-        })
-
+# Global Mock Setup for GenLayer `gl` namespace
 class MockMessage:
-    def __init__(self, sender="0x1111111111111111111111111111111111111111", value=1000000000000000000):
-        self.sender_address = MockAddress(sender)
-        self.value = value
+    def __init__(self):
+        self.sender_address = "0xaaaa"
+        self.value = 1000000000000000000
+
+class MockResult:
+    def __init__(self, calldata):
+        self.calldata = calldata
 
 class MockNondetWeb:
     @staticmethod
     def render(url, mode='text'):
-        return "Amazon Rainforest Reforestation Project verified 5000 Swietenia macrophylla mahogany trees planted at -3.465, -62.215."
+        if "fraud" in url:
+            return "corruption fraud investigation"
+        return "1000000000 trees planted in Khyber Pakhtunkhwa, Pakistan. Native regional trees."
+
+class MockNondetLLM:
+    @staticmethod
+    def call(prompt, schema):
+        if "fraud" in prompt:
+            return '{"is_accurate": false, "source_provenance_valid": true, "location_match": true, "species_safe": true, "tree_count_reasonable": true, "reasoning": "Rejected due to fraud", "carbon_sequestration_tons": "0", "ecological_suitability": "None", "ecological_role": "", "image_url": ""}'
+        return '{"is_accurate": true, "source_provenance_valid": true, "location_match": true, "species_safe": true, "tree_count_reasonable": true, "reasoning": "Valid", "carbon_sequestration_tons": "500", "ecological_suitability": "Good", "ecological_role": "Soil", "image_url": "http://img"}'
+
+class MockVM:
+    class Return:
+        pass
+    class Result:
+        def __init__(self, calldata):
+            self.calldata = calldata
+    class UserError(Exception):
+        pass
+    @staticmethod
+    def run_nondet_unsafe(leader_fn, validator_fn):
+        res = leader_fn()
+        return res
 
 class MockEqPrinciple:
-    mock_response = None
-    @staticmethod
-    def prompt_non_comparative(prompt_fn, task="", criteria=""):
-        if MockEqPrinciple.mock_response is not None:
-            return MockEqPrinciple.mock_response
-        return json.dumps({
-            "is_accurate": True,
-            "reasoning": "Valid audit verified by mock consensus",
-            "project_name": "Amazon Basin Sector D",
-            "location_coords": "-3.465, -62.215",
-            "species_planted": ["Swietenia macrophylla"],
-            "tree_count": 5000,
-            "carbon_offset_tons": 110.0,
-            "ecological_suitability": "Highly Suitable - Native Species",
-            "ecological_role": "Soil stabilization and watershed restoration"
-        })
+    def __init__(self, val):
+        pass
 
-# Global mock gl namespace
+class MockAddress:
+    def __init__(self, address):
+        self.address = address
+    def __str__(self):
+        return self.address
+
+class MockRecipient:
+    transfers = []
+    def __init__(self, address):
+        self.address = str(address)
+    def emit_transfer(self, value, **kwargs):
+        MockRecipient.transfers.append({"to": self.address, "value": value})
+
+class MockContract:
+    def __init__(self):
+        self.balance = 100 * 1000000000000000000 # 100 GEN
+
+class MockDecorator:
+    def __call__(self, fn):
+        return fn
+    @property
+    def payable(self):
+        return self
+    @property
+    def write(self):
+        return self
+    @property
+    def view(self):
+        return self
+
 class MockGL:
     def __init__(self):
         self.message = MockMessage()
-        self.nondet = type('obj', (object,), {'web': MockNondetWeb})
+        
+        # Define nondet object that has exec_prompt
+        class NondetObj:
+            web = MockNondetWeb
+            def exec_prompt(self, prompt_str):
+                return MockNondetLLM.call(prompt_str, None)
+        
+        self.nondet = NondetObj()
+        self.vm = MockVM
         self.eq_principle = MockEqPrinciple
-    def get_self_balance(self):
-        return 100000000000000000000 # 100 GEN treasury
+        self.Contract = MockContract
+        self.public = type('obj', (object,), {'write': MockDecorator(), 'view': MockDecorator()})()
+        self.evm = type('obj', (object,), {'contract_interface': MockDecorator()})()
 
-gl = MockGL()
-Address = MockAddress
-_Recipient = MockRecipient
-u256 = int
-TreeMap = dict
-class Contract: pass
+# Inject the mock `gl` into sys.modules so `botanexa_contract.py` can import it
+mock_genlayer = type('genlayer', (object,), {'gl': MockGL(), 'u256': int, 'TreeMap': dict, 'Address': MockAddress})
+sys.modules['genlayer'] = mock_genlayer
 
-# Import or define the contract logic using the mock environment
+from botanexa_contract import BotanexaRegistry
+
 class BotanexaRegistryTest(unittest.TestCase):
     def setUp(self):
         MockRecipient.transfers = []
-        # Instantiate contract state
-        self.query_history = {}
-        self.verified_projects = {}
-        self.pending_rewards = {}
-        self.total_pending_rewards = "0"
-        self.total_queries = 0
-        self.recent_projects_list = json.dumps([])
-        self.ONE_GEN = 1000000000000000000
-
-    def _addr(self, a):
-        return str(a).lower()
-
-    def propose_offset(self, project_name, location_coords, species_planted, tree_count, evidence_url, mock_accuracy=True, stake=1000000000000000000):
-        caller = gl.message.sender_address
-        caller_str = self._addr(caller)
-        stake_int = int(stake)
-
-        if stake_int < self.ONE_GEN:
-            raise Exception("Must stake at least 1 GEN to propose a project audit.")
-
-        project_clean = project_name.strip()
-        project_lower = project_clean.lower()
-
-        if not project_lower:
-            raise Exception("Project name cannot be empty.")
-
-        if project_lower in self.verified_projects:
-            raise Exception(f"Project '{project_clean}' is already verified.")
-
-        # Reward is strictly capped: 1 GEN bonus reward (+ the stake returned)
-        reward_bonus = self.ONE_GEN
-        reward_wei = stake_int + reward_bonus
+        self.contract = BotanexaRegistry()
+        # Need to manually inject the balance property for the mock
+        self.contract.balance = 100 * 1000000000000000000
         
-        safe_exp = {
-            "project_name": project_clean,
-            "reasoning": "Valid audit verified by mock consensus",
-            "image_url": "https://example.org/image.jpg"
-        }
-
-        if mock_accuracy:
-            # ACCEPTED:
-            current = int(self.pending_rewards.get(caller_str, "0"))
-            self.pending_rewards[caller_str] = str(current + reward_wei)
-            current_total = int(self.total_pending_rewards)
-            self.total_pending_rewards = str(current_total + reward_wei)
-
-            self.verified_projects[project_lower] = json.dumps({
-                "proposer": caller_str,
-                "project_name": project_clean,
-                "validator_consensus": True,
-                "explanation": safe_exp
-            })
-            
-            hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
-            hist.append({"project": project_clean, "project_lower": project_lower, "reasoning": safe_exp["reasoning"], "image_url": safe_exp["image_url"], "accepted": True})
-            self.query_history[caller_str] = json.dumps(hist)
-            
-            self.total_queries += 1
-            return "ACCEPTED"
-        else:
-            # REJECTED: Real Burn to Null Address 0x0000...
-            burn_address = "0x0000000000000000000000000000000000000000"
-            _Recipient(burn_address).emit_transfer(value=stake_int, on='finalized')
-            
-            hist = json.loads(self.query_history[caller_str]) if caller_str in self.query_history else []
-            hist.append({"project": project_clean, "project_lower": project_lower, "reasoning": "Rejected", "accepted": False})
-            self.query_history[caller_str] = json.dumps(hist)
-            
-            self.total_queries += 1
-            return "REJECTED"
-
-    def withdraw_rewards(self, caller_address):
-        caller_str = self._addr(caller_address)
-        pending_str = self.pending_rewards.get(caller_str, "0")
-        pending_amount = int(pending_str)
-
-        if pending_amount == 0:
-            raise Exception("No rewards available to withdraw.")
-
-        # Checks-effects-interactions
-        self.pending_rewards[caller_str] = "0"
-        current_total = int(self.total_pending_rewards)
-        self.total_pending_rewards = str(current_total - pending_amount)
-
-        # Emit native transfer to caller
-        _Recipient(caller_address).emit_transfer(value=pending_amount, on='finalized')
-        return pending_amount
+        # Inject Recipient mock specifically for tests
+        import botanexa_contract
+        botanexa_contract._Recipient = MockRecipient
+        botanexa_contract.gl = mock_genlayer.gl
 
     def test_full_reward_claim_lifecycle(self):
-        user = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-        gl.message.sender_address = MockAddress(user)
+        mock_genlayer.gl.message.sender_address = MockAddress("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        
+        # Propose
+        self.contract.propose_offset("Amazonia Canopy", "-3.465, -62.215", "Mahogany", 5000, "https://example.org")
+        
+        pending = int(self.contract.pending_rewards.get("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "0"))
+        self.assertEqual(pending, 2 * 1000000000000000000)
 
-        res = self.propose_offset("Amazonia Canopy", "-3.465, -62.215", "Mahogany", 5000, "https://example.org", mock_accuracy=True, stake=self.ONE_GEN)
-        self.assertEqual(res, "ACCEPTED")
-
-        pending = int(self.pending_rewards[user.lower()])
-        self.assertEqual(pending, 2 * self.ONE_GEN)
-
-        withdrawn = self.withdraw_rewards(user)
-        self.assertEqual(withdrawn, 2 * self.ONE_GEN)
-
+        # Withdraw
+        self.contract.withdraw_rewards()
+        
         self.assertEqual(len(MockRecipient.transfers), 1)
-        self.assertEqual(MockRecipient.transfers[0]["to"], user)
-        self.assertEqual(MockRecipient.transfers[0]["value"], 2 * self.ONE_GEN)
+        self.assertEqual(MockRecipient.transfers[0]["to"], "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        self.assertEqual(MockRecipient.transfers[0]["value"], 2 * 1000000000000000000)
 
-        self.assertEqual(int(self.pending_rewards[user.lower()]), 0)
+        self.assertEqual(int(self.contract.pending_rewards["0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]), 0)
 
         with self.assertRaises(Exception) as ctx:
-            self.withdraw_rewards(user)
-        self.assertIn("No rewards available to withdraw", str(ctx.exception))
+            self.contract.withdraw_rewards()
+        self.assertIn("No rewards available", str(ctx.exception))
 
     def test_real_burning_on_fraudulent_claim(self):
-        user = "0xcccccccccccccccccccccccccccccccccccccccc"
-        gl.message.sender_address = MockAddress(user)
-
-        res = self.propose_offset("Fake Desert Trees", "0.0, 0.0", "Kudzu", 999999, "https://fake.org", mock_accuracy=False, stake=self.ONE_GEN)
-        self.assertEqual(res, "REJECTED")
-
-        self.assertEqual(int(self.pending_rewards.get(user.lower(), "0")), 0)
+        mock_genlayer.gl.message.sender_address = MockAddress("0xcccccccccccccccccccccccccccccccccccccccc")
+        
+        # Trigger rejection
+        self.contract.propose_offset("Fake Desert Trees", "0.0, 0.0", "Kudzu", 999999, "https://fraud.org")
+        
+        self.assertEqual(int(self.contract.pending_rewards.get("0xcccccccccccccccccccccccccccccccccccccccc", "0")), 0)
 
         self.assertEqual(len(MockRecipient.transfers), 1)
         self.assertEqual(MockRecipient.transfers[0]["to"], "0x0000000000000000000000000000000000000000")
-        self.assertEqual(MockRecipient.transfers[0]["value"], self.ONE_GEN)
+        self.assertEqual(MockRecipient.transfers[0]["value"], 1000000000000000000)
 
     def test_duplicate_project_rejection(self):
-        user = "0xdddddddddddddddddddddddddddddddddddddddd"
-        gl.message.sender_address = MockAddress(user)
-        self.propose_offset("UniqueProject", "Coords", "Oak", 100, "https://valid.com", mock_accuracy=True, stake=self.ONE_GEN)
+        mock_genlayer.gl.message.sender_address = MockAddress("0xdddddddddddddddddddddddddddddddddddddddd")
+        self.contract.propose_offset("UniqueProject", "Coords", "Oak", 100, "https://valid.com")
         with self.assertRaises(Exception) as ctx:
-            self.propose_offset("UniqueProject", "Coords", "Oak", 100, "https://valid.com", mock_accuracy=True, stake=self.ONE_GEN)
+            self.contract.propose_offset("uniqueproject", "Coords", "Oak", 100, "https://valid.com")
         self.assertIn("already verified", str(ctx.exception))
 
     def test_invalid_url_validation(self):
-        user = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-        gl.message.sender_address = MockAddress(user)
+        mock_genlayer.gl.message.sender_address = MockAddress("0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         with self.assertRaises(Exception) as ctx:
-            self.propose_offset("Project", "Coords", "Pine", 10, "ftp://badurl.com", stake=self.ONE_GEN)
+            self.contract.propose_offset("Project", "Coords", "Pine", 10, "ftp://badurl.com")
         self.assertIn("Invalid evidence_url", str(ctx.exception))
 
     def test_treasury_insufficient(self):
-        user = "0xffffffffffffffffffffffffffffffffffffffff"
-        gl.message.sender_address = MockAddress(user)
-        # Mock drain treasury by artificially setting balance in the mock or simulating large rewards
-        # The contract code checks `self.balance < self.total_pending_rewards + stake + ONE_GEN`
-        # We can trigger it by artificially inflating pending rewards
-        self.total_pending_rewards = str(1000 * self.ONE_GEN)
+        mock_genlayer.gl.message.sender_address = MockAddress("0xffffffffffffffffffffffffffffffffffffffff")
+        # Artificially inflate pending rewards so balance can't cover it
+        self.contract.total_pending_rewards = 100 * 1000000000000000000
         with self.assertRaises(Exception) as ctx:
-            self.propose_offset("TreasuryTest", "Coords", "Oak", 100, "https://test.org", stake=self.ONE_GEN)
-        self.assertIn("Contract does not have enough treasury funds", str(ctx.exception))
+            self.contract.propose_offset("TreasuryTest", "Coords", "Oak", 100, "https://test.org")
+        self.assertIn("enough treasury funds", str(ctx.exception))
 
 if __name__ == "__main__":
     unittest.main()
