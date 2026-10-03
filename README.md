@@ -77,6 +77,7 @@ To prove deployment matches this repository and that the intelligent contract va
 
 **Deployment Match Proof:**
 - **Contract Address:** `0x391C1d777EF4Af2828Dfe8a8c7430b7a898e3Ac0`
+- **GenLayer Explorer:** [View on GenLayer Studio Explorer](https://explorer-studio.genlayer.com/address/0x391C1d777EF4Af2828Dfe8a8c7430b7a898e3Ac0)
 - **Source Verification:** The code deployed exactly matches `botanexa_contract.py` in this repository.
 
 **Integration Evidence (Live Transactions):**
