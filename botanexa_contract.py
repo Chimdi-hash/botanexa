@@ -113,7 +113,7 @@ MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
 - SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required.
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
-- The planted species include highly invasive species for that region.
+- The planted species include highly invasive species for that region. (NOTE: If the claimed species is generic, like 'Native trees', and the source text does not explicitly contradict it or list invasive species, you MUST assume the species is safe and accept it).
 - The evidence webpage indicates the project was completely cancelled, abandoned, or proven to be a total hoax. (NOTE: Mentions of financial audits, political controversies, or corruption inquiries do NOT trigger this rejection as long as the physical planting of the trees actually occurred).
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
 
@@ -163,17 +163,18 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
             my_res = leader_fn()
             
             # Validator verifies ALL substantive outputs
+            # We bundle the semantic strings into a single eq_principle call to prevent LLM consensus timeouts
+            my_semantic_bundle = f"Reasoning: {my_res.get('reasoning', '')} | Role: {my_res.get('ecological_role', '')} | Suitability: {my_res.get('ecological_suitability', '')} | Carbon: {my_res.get('carbon_sequestration_tons', '')}"
+            leader_semantic_bundle = f"Reasoning: {leaders_res.calldata.get('reasoning', '')} | Role: {leaders_res.calldata.get('ecological_role', '')} | Suitability: {leaders_res.calldata.get('ecological_suitability', '')} | Carbon: {leaders_res.calldata.get('carbon_sequestration_tons', '')}"
+
             return (
                 my_res["is_accurate"] == leaders_res.calldata["is_accurate"] and
                 my_res["source_provenance_valid"] == leaders_res.calldata["source_provenance_valid"] and
                 my_res["location_match"] == leaders_res.calldata["location_match"] and
                 my_res["tree_count_reasonable"] == leaders_res.calldata["tree_count_reasonable"] and
                 my_res["species_safe"] == leaders_res.calldata["species_safe"] and
-                gl.eq_principle(my_res["reasoning"], leaders_res.calldata["reasoning"]) and
-                gl.eq_principle(str(my_res["carbon_sequestration_tons"]), str(leaders_res.calldata["carbon_sequestration_tons"])) and
-                gl.eq_principle(my_res["ecological_suitability"], leaders_res.calldata["ecological_suitability"]) and
-                gl.eq_principle(my_res["ecological_role"], leaders_res.calldata["ecological_role"]) and
-                isinstance(leaders_res.calldata["image_url"], str)
+                isinstance(leaders_res.calldata.get("image_url", ""), str) and
+                gl.eq_principle(my_semantic_bundle, leader_semantic_bundle)
             )
 
         result_dict = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
