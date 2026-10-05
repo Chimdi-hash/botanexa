@@ -69,24 +69,24 @@ Add the **GenLayer Studio** network to MetaMask:
 3. Select the contract and click **Deploy**.
 4. Copy the deployed contract address and paste it into the `CONTRACT_ADDRESS` constant at the top of `app.js`. The currently deployed address is:
    ```javascript
-   const CONTRACT_ADDRESS = '0x391C1d777EF4Af2828Dfe8a8c7430b7a898e3Ac0';
+   const CONTRACT_ADDRESS = '0x157D14a18c575748B9D9a2E3fFEf540682455545';
    ```
 
 ### 3. Deployment Proof & Transaction Records (Required for Audit)
 To prove deployment matches this repository and that the intelligent contract validators correctly process real-world inputs, here are the recorded transaction hashes on the GenLayer testnet:
 
 **Deployment Match Proof:**
-- **Contract Address:** `0x391C1d777EF4Af2828Dfe8a8c7430b7a898e3Ac0`
-- **GenLayer Explorer:** [View on GenLayer Studio Explorer](https://explorer-studio.genlayer.com/address/0x391C1d777EF4Af2828Dfe8a8c7430b7a898e3Ac0)
+- **Contract Address:** `0x157D14a18c575748B9D9a2E3fFEf540682455545`
+- **GenLayer Explorer:** [View on GenLayer Studio Explorer](https://explorer-studio.genlayer.com/address/0x157D14a18c575748B9D9a2E3fFEf540682455545)
 - **Source Verification:** The code deployed exactly matches `botanexa_contract.py` in this repository.
 
 **Integration Evidence (Live Transactions):**
 - **Successful `propose_offset` Transaction (Honest Proposer):** 
-  - *Tx Hash:* `0x7ee72893bbc60f70eed5d15a37321c2adfd99dbda808da362cf0878d49864994`
+  - *Tx Hash:* `[PASTE_SUCCESS_HASH_HERE]`
   - *Inputs:* Billion Tree Tsunami, Khyber Pakhtunkhwa, Native regional trees, 1000000000, Wikipedia URL
   - *Outcome:* Validators verified source provenance, species safety, and tree count. Contract state updated to include carbon offset and pending rewards.
 - **Rejected `propose_offset` Transaction (Greenwasher):** 
-  - *Tx Hash:* `0x4e8064841fdb60e1cb583f99e3e4bf0bf303a72930aa7074d46feabfde2daa01`
+  - *Tx Hash:* `[PASTE_REJECTED_HASH_HERE]`
   - *Inputs:* Great Green Wall, Antarctica, Japanese Knotweed, 99000000000, Wikipedia URL
   - *Outcome:* Validators correctly detected the location mismatch, highly invasive species, and vastly inflated tree count. Claim immediately rejected.
 
