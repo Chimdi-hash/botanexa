@@ -162,16 +162,18 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 return False
             my_res = leader_fn()
             
-            # Validator verifies ALL substantive outputs, not just is_accurate
+            # Validator verifies ALL substantive outputs
             return (
                 my_res["is_accurate"] == leaders_res.calldata["is_accurate"] and
                 my_res["source_provenance_valid"] == leaders_res.calldata["source_provenance_valid"] and
                 my_res["location_match"] == leaders_res.calldata["location_match"] and
                 my_res["tree_count_reasonable"] == leaders_res.calldata["tree_count_reasonable"] and
                 my_res["species_safe"] == leaders_res.calldata["species_safe"] and
-                bool(leaders_res.calldata["reasoning"]) == True and
-                isinstance(leaders_res.calldata["carbon_sequestration_tons"], str) and
-                isinstance(leaders_res.calldata["ecological_suitability"], str)
+                gl.eq_principle(my_res["reasoning"], leaders_res.calldata["reasoning"]) and
+                gl.eq_principle(str(my_res["carbon_sequestration_tons"]), str(leaders_res.calldata["carbon_sequestration_tons"])) and
+                gl.eq_principle(my_res["ecological_suitability"], leaders_res.calldata["ecological_suitability"]) and
+                gl.eq_principle(my_res["ecological_role"], leaders_res.calldata["ecological_role"]) and
+                isinstance(leaders_res.calldata["image_url"], str)
             )
 
         result_dict = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
