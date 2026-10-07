@@ -35,8 +35,8 @@ def test_full_reward_claim_lifecycle(direct_deploy, direct_vm, direct_alice, dir
     })
     
     import genlayer.gl as gl
-    original_exec_prompt = getattr(gl.nondet, 'exec_prompt', None)
-    gl.nondet.exec_prompt = lambda prompt: acceptance_json
+    original_exec_prompt = getattr(gl.eq_principle, 'prompt_non_comparative', None)
+    gl.eq_principle.prompt_non_comparative = lambda prompt, task, criteria: acceptance_json
     
     try:
         # Propose Offset
@@ -62,7 +62,7 @@ def test_full_reward_claim_lifecycle(direct_deploy, direct_vm, direct_alice, dir
         
     finally:
         if original_exec_prompt:
-            gl.nondet.exec_prompt = original_exec_prompt
+            gl.eq_principle.prompt_non_comparative = original_exec_prompt
 
 @pytest.mark.direct
 def test_real_burning_on_fraudulent_claim(direct_deploy, direct_vm, direct_alice):
@@ -85,8 +85,8 @@ def test_real_burning_on_fraudulent_claim(direct_deploy, direct_vm, direct_alice
     })
     
     import genlayer.gl as gl
-    original_exec_prompt = getattr(gl.nondet, 'exec_prompt', None)
-    gl.nondet.exec_prompt = lambda prompt: rejection_json
+    original_exec_prompt = getattr(gl.eq_principle, 'prompt_non_comparative', None)
+    gl.eq_principle.prompt_non_comparative = lambda prompt, task, criteria: rejection_json
     
     try:
         with direct_vm.prank(direct_alice):
@@ -103,4 +103,4 @@ def test_real_burning_on_fraudulent_claim(direct_deploy, direct_vm, direct_alice
         
     finally:
         if original_exec_prompt:
-            gl.nondet.exec_prompt = original_exec_prompt
+            gl.eq_principle.prompt_non_comparative = original_exec_prompt

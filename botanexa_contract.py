@@ -81,40 +81,36 @@ class BotanexaRegistry(gl.Contract):
         self.total_staked_amount = self.total_staked_amount + stake
         self.total_trees_audited = self.total_trees_audited + u256(int(tree_count))
 
-        def leader_fn():
+        def build_prompt() -> str:
             # Fetch and render the actual web content inside the non-deterministic block.
-            # mode='text' executes JS and bypasses Cloudflare security challenges natively.
             web_data = gl.nondet.web.render(evidence_url, mode="text")
 
-            # Truncate oversized fetched pages to prevent context explosion
-            if len(web_data) > 100000:
-                web_data = web_data[:100000]
-            
-            prompt_str = f"""You are a STRICT ecological fact-checker verifying a carbon offset project.
-Your job is to REJECT incorrect, inflated, or greenwashed claims. Be extremely critical of corporate ecological reports.
+            return f"""You are a STRICT auditor for Botanexa, a decentralized carbon offset registry.
+Your job is to REJECT fraudulent or unverified afforestation/reforestation claims based on the provided evidence URL.
 
-Project Name claimed: "{project_clean}"
-Stated GPS/Location: "{location_coords}"
-Declared Species: "{species_planted}"
-Declared Tree Count: {tree_count}
-Evidence URL: "{evidence_url}"
+--- PROPOSED CLAIM ---
+Project / Source: {project_clean}
+Location (Lat/Long): {location_coords}
+Species Planted: {species_planted}
+Tree Count: {tree_count}
+Evidence URL: {evidence_url}
 
---- EVIDENCE WEBPAGE CONTENT ---
-{web_data}
---------------------------------
+--- EVIDENCE EXTRACTED ---
+{web_data[:4000]}  # Limiting context to avoid token overflow
 
-STEP 1 — Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority (e.g., Wikipedia, official government registries, UN, Arbor Day, or reputable international news orgs).
-STEP 2 — Read the evidence webpage content carefully.
-STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 4 — Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per tree) and assess ecological suitability.
-STEP 5 — Apply the REJECTION RULES below.
+--- INSTRUCTIONS ---
+STEP 1 - Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority.
+STEP 2 - Read the evidence webpage content carefully.
+STEP 3 - Compare the proposed coordinates, tree count, and species against the source text.
+STEP 4 - Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per tree) and assess ecological suitability.
+STEP 5 - Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
-- SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately. Independent corroboration is strictly required.
+- SOURCE PROVENANCE FAILED: If the URL appears to be a claimant-controlled domain, a personal blog, a generic corporate PR page, or any unverified/suspicious source, you MUST reject the claim immediately.
 - The evidence URL does NOT mention the project "{project_clean}" or the specified location/work.
 - The tree count claimed ({tree_count}) is significantly higher (over 20% inflation) than what is documented in the source.
-- The planted species include highly invasive species for that region. (NOTE: If the claimed species is generic, like 'Native trees', and the source text does not explicitly contradict it or list invasive species, you MUST assume the species is safe and accept it).
-- The evidence webpage indicates the project was completely cancelled, abandoned, or proven to be a total hoax. (NOTE: Mentions of financial audits, political controversies, or corruption inquiries do NOT trigger this rejection as long as the physical planting of the trees actually occurred).
+- The planted species include highly invasive species for that region. (NOTE: If the claimed species is generic, like 'Native trees', and the source text does not explicitly contradict it, you MUST assume the species is safe).
+- The evidence webpage indicates the project was completely cancelled, abandoned, or proven to be a total hoax.
 - The coordinates placed ("{location_coords}") are completely unrelated to the project location described in the source.
 
 Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
@@ -131,62 +127,42 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
   "image_url": "If accepted, extract a direct absolute image URL (starting with https://). Otherwise empty."
 }}
 """
-            result_str = gl.nondet.exec_prompt(prompt_str)
-            try:
-                c = result_str.strip()
-                s = c.find("{"); e = c.rfind("}") + 1
-                if s >= 0 and e > s: c = c[s:e]
-                data = json.loads(c)
-                
-                # Strict parsing to prevent malformed string 'false' from bypassing as True
-                is_acc_val = data.get("is_accurate")
-                is_acc_bool = True if is_acc_val is True or str(is_acc_val).strip().lower() == "true" else False
-                
-                return {
-                    "is_accurate": is_acc_bool,
-                    "source_provenance_valid": bool(data.get("source_provenance_valid")),
-                    "location_match": bool(data.get("location_match")),
-                    "species_safe": bool(data.get("species_safe")),
-                    "tree_count_reasonable": bool(data.get("tree_count_reasonable")),
-                    "carbon_sequestration_tons": str(data.get("carbon_sequestration_tons", "0.0")),
-                    "ecological_suitability": str(data.get("ecological_suitability", "Unverified")),
-                    "ecological_role": str(data.get("ecological_role", "")),
-                    "reasoning": str(data.get("reasoning", "No reasoning provided.")),
-                    "image_url": str(data.get("image_url", ""))
-                }
-            except Exception:
-                return {"is_accurate": False, "source_provenance_valid": False, "location_match": False, "species_safe": False, "tree_count_reasonable": False, "reasoning": "Failed to parse LLM JSON output.", "carbon_sequestration_tons": "0", "ecological_suitability": "Unverified", "ecological_role": "", "image_url": ""}
 
-        def validator_fn(leaders_res: gl.vm.Result) -> bool:
-            if not isinstance(leaders_res, gl.vm.Return):
-                return False
-            my_res = leader_fn()
-            
-            # Validator verifies ALL substantive outputs independently
-            # We bundle the semantic text into a single eq_principle call to prevent LLM timeouts, EXCLUDING the carbon number
-            my_semantic_bundle = f"Reasoning: {my_res.get('reasoning', '')} | Role: {my_res.get('ecological_role', '')} | Suitability: {my_res.get('ecological_suitability', '')}"
-            leader_semantic_bundle = f"Reasoning: {leaders_res.calldata.get('reasoning', '')} | Role: {leaders_res.calldata.get('ecological_role', '')} | Suitability: {leaders_res.calldata.get('ecological_suitability', '')}"
-
-            try:
-                leader_carbon = float(leaders_res.calldata.get("carbon_sequestration_tons", 0))
-                my_carbon = float(my_res.get("carbon_sequestration_tons", 0))
-                # Validate that both leader and validator independently generated mathematically reasonable positive values (e.g. not drastically negative or infinity)
-                carbon_is_numeric = (leader_carbon >= 0.0)
-            except Exception:
-                carbon_is_numeric = False
-
-            return (
-                my_res["is_accurate"] == leaders_res.calldata["is_accurate"] and
-                my_res["source_provenance_valid"] == leaders_res.calldata["source_provenance_valid"] and
-                my_res["location_match"] == leaders_res.calldata["location_match"] and
-                my_res["tree_count_reasonable"] == leaders_res.calldata["tree_count_reasonable"] and
-                my_res["species_safe"] == leaders_res.calldata["species_safe"] and
-                carbon_is_numeric and
-                isinstance(leaders_res.calldata.get("image_url", ""), str) and
-                gl.eq_principle(my_semantic_bundle, leader_semantic_bundle)
+        # Use prompt_non_comparative so validators reach consensus independently
+        result_str = gl.eq_principle.prompt_non_comparative(
+            build_prompt,
+            task="Verify the proposed afforestation project and evaluate its claims.",
+            criteria=(
+                "The leader's response MUST be a valid JSON object containing is_accurate, reasoning, "
+                "carbon_sequestration_tons, ecological_role, and ecological_suitability. "
+                "The 'is_accurate' field MUST be false if the evidence URL does not support the location, tree count, or species, "
+                "or if the species are highly invasive. If the claimed species is generic (like 'Native trees') and the source text "
+                "does not explicitly contradict it, the leader MUST assume the species is safe. "
+                "The 'carbon_sequestration_tons' MUST be mathematically reasonable based on a ~0.1 to 1.0 ton per tree estimate."
             )
+        )
 
-        result_dict = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+        try:
+            c = result_str.strip()
+            s = c.find("{"); e = c.rfind("}") + 1
+            if s != -1 and e != 0:
+                c = c[s:e]
+            import json
+            data = json.loads(c)
+            result_dict = {
+                "is_accurate": bool(data.get("is_accurate")),
+                "source_provenance_valid": bool(data.get("source_provenance_valid")),
+                "location_match": bool(data.get("location_match")),
+                "species_safe": bool(data.get("species_safe")),
+                "tree_count_reasonable": bool(data.get("tree_count_reasonable")),
+                "carbon_sequestration_tons": str(data.get("carbon_sequestration_tons", "0.0")),
+                "ecological_suitability": str(data.get("ecological_suitability", "Unverified")),
+                "ecological_role": str(data.get("ecological_role", "")),
+                "reasoning": str(data.get("reasoning", "No reasoning provided.")),
+                "image_url": str(data.get("image_url", ""))
+            }
+        except Exception:
+            result_dict = {"is_accurate": False, "source_provenance_valid": False, "location_match": False, "species_safe": False, "tree_count_reasonable": False, "reasoning": "Failed to parse LLM JSON output.", "carbon_sequestration_tons": "0", "ecological_suitability": "Unverified", "ecological_role": "", "image_url": ""}
         is_accurate = result_dict["is_accurate"]
 
         safe_exp = {
