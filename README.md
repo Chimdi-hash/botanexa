@@ -82,11 +82,11 @@ To prove deployment matches this repository and that the intelligent contract va
 
 **Integration Evidence (Live Transactions):**
 - **Successful `propose_offset` Transaction (Honest Proposer):** 
-  - *Tx Hash:* `[PASTE_SUCCESS_HASH_HERE]`
+  - *Tx Hash:* `0x122f016cd5f7ed7e173d818de61c0980b6328b353b1c90c712300ba3ed0b32af`
   - *Inputs:* Billion Tree Tsunami, Khyber Pakhtunkhwa, Native regional trees, 1000000000, Wikipedia URL
   - *Outcome:* Validators verified source provenance, species safety, and tree count. Contract state updated to include carbon offset and pending rewards.
 - **Rejected `propose_offset` Transaction (Greenwasher):** 
-  - *Tx Hash:* `[PASTE_REJECTED_HASH_HERE]`
+  - *Tx Hash:* `0xbddf4817e2544d686f9c04de594caa6e121cbf298427bd07e768dd7475cc44b0`
   - *Inputs:* Great Green Wall, Antarctica, Japanese Knotweed, 99000000000, Wikipedia URL
   - *Outcome:* Validators correctly detected the location mismatch, highly invasive species, and vastly inflated tree count. Claim immediately rejected.
 
