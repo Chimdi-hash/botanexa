@@ -69,15 +69,15 @@ Add the **GenLayer Studio** network to MetaMask:
 3. Select the contract and click **Deploy**.
 4. Copy the deployed contract address and paste it into the `CONTRACT_ADDRESS` constant at the top of `app.js`. The currently deployed address is:
    ```javascript
-   const CONTRACT_ADDRESS = '0xfB97e702fc1226106450883709431AB9b0072BF9';
+   const CONTRACT_ADDRESS = '0x4A17a9dFbd1FdC23B788676dfc0DCb77ae2dd7bB';
    ```
 
 ### 3. Deployment Proof & Transaction Records (Required for Audit)
 To prove deployment matches this repository and that the intelligent contract validators correctly process real-world inputs, here are the recorded transaction hashes on the GenLayer testnet:
 
 **Deployment Match Proof:**
-- **Contract Address:** `0xfB97e702fc1226106450883709431AB9b0072BF9`
-- **GenLayer Explorer:** [View on GenLayer Studio Explorer](https://explorer-studio.genlayer.com/address/0xfB97e702fc1226106450883709431AB9b0072BF9)
+- **Contract Address:** `0x4A17a9dFbd1FdC23B788676dfc0DCb77ae2dd7bB`
+- **GenLayer Explorer:** [View on GenLayer Studio Explorer](https://explorer-studio.genlayer.com/address/0x4A17a9dFbd1FdC23B788676dfc0DCb77ae2dd7bB)
 - **Source Verification:** The code deployed exactly matches `botanexa_contract.py` in this repository.
 
 **Integration Evidence (Live Transactions):**
