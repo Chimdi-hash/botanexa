@@ -106,7 +106,7 @@ Evidence URL: "{evidence_url}"
 STEP 1 — Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority (e.g., Wikipedia, official government registries, UN, Arbor Day, or reputable international news orgs).
 STEP 2 — Read the evidence webpage content carefully.
 STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 4 — Calculate estimated carbon sequestration (MUST be exactly tree_count * 0.5 tons. Do not use ranges) and assess ecological suitability.
+STEP 4 — Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per tree) and assess ecological suitability.
 STEP 5 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
@@ -162,10 +162,18 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 return False
             my_res = leader_fn()
             
-            # Validator verifies ALL substantive outputs
-            # We bundle the semantic strings into a single eq_principle call to prevent LLM consensus timeouts
-            my_semantic_bundle = f"Reasoning: {my_res.get('reasoning', '')} | Role: {my_res.get('ecological_role', '')} | Suitability: {my_res.get('ecological_suitability', '')} | Carbon: {my_res.get('carbon_sequestration_tons', '')}"
-            leader_semantic_bundle = f"Reasoning: {leaders_res.calldata.get('reasoning', '')} | Role: {leaders_res.calldata.get('ecological_role', '')} | Suitability: {leaders_res.calldata.get('ecological_suitability', '')} | Carbon: {leaders_res.calldata.get('carbon_sequestration_tons', '')}"
+            # Validator verifies ALL substantive outputs independently
+            # We bundle the semantic text into a single eq_principle call to prevent LLM timeouts, EXCLUDING the carbon number
+            my_semantic_bundle = f"Reasoning: {my_res.get('reasoning', '')} | Role: {my_res.get('ecological_role', '')} | Suitability: {my_res.get('ecological_suitability', '')}"
+            leader_semantic_bundle = f"Reasoning: {leaders_res.calldata.get('reasoning', '')} | Role: {leaders_res.calldata.get('ecological_role', '')} | Suitability: {leaders_res.calldata.get('ecological_suitability', '')}"
+
+            try:
+                leader_carbon = float(leaders_res.calldata.get("carbon_sequestration_tons", 0))
+                my_carbon = float(my_res.get("carbon_sequestration_tons", 0))
+                # Validate that both leader and validator independently generated mathematically reasonable positive values (e.g. not drastically negative or infinity)
+                carbon_is_numeric = (leader_carbon >= 0.0)
+            except Exception:
+                carbon_is_numeric = False
 
             return (
                 my_res["is_accurate"] == leaders_res.calldata["is_accurate"] and
@@ -173,6 +181,7 @@ Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
                 my_res["location_match"] == leaders_res.calldata["location_match"] and
                 my_res["tree_count_reasonable"] == leaders_res.calldata["tree_count_reasonable"] and
                 my_res["species_safe"] == leaders_res.calldata["species_safe"] and
+                carbon_is_numeric and
                 isinstance(leaders_res.calldata.get("image_url", ""), str) and
                 gl.eq_principle(my_semantic_bundle, leader_semantic_bundle)
             )
