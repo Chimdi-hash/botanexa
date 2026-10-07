@@ -106,7 +106,7 @@ Evidence URL: "{evidence_url}"
 STEP 1 — Source Authority Check: Determine if the evidence URL belongs to an independent, authenticated, and globally recognized authority (e.g., Wikipedia, official government registries, UN, Arbor Day, or reputable international news orgs).
 STEP 2 — Read the evidence webpage content carefully.
 STEP 3 — Compare the proposed coordinates, tree count, and species against the source text.
-STEP 4 — Calculate estimated carbon sequestration (assuming ~0.1 to 1 ton per tree) and assess ecological suitability.
+STEP 4 — Calculate estimated carbon sequestration (MUST be exactly tree_count * 0.5 tons. Do not use ranges) and assess ecological suitability.
 STEP 5 — Apply the REJECTION RULES below.
 
 MANDATORY REJECTION RULES (set is_accurate=false if ANY of these apply):
